@@ -34,4 +34,4 @@ A static, browser-based flux diagram editor that runs entirely on GitHub Pages. 
 
 ## License
 
-MIT
+GNU GPL 3.0
