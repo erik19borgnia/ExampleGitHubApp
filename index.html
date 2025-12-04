@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flux Diagram Editor</title>
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <!-- Sidebar toggle button ☰/✕ -->
+      <button id="sidebarToggle" class="sidebar-toggle" title="Toggle sidebar">✕</button>
+      <div class="header-left">
+        <h1 class="app-title">Flux Diagram Editor</h1>
+      </div>
+      <div class="header-right">
+        <button id="saveBtn" class="btn btn-primary" title="Save diagram">Save</button>
+        <button id="loadBtn" class="btn btn-secondary" title="Load diagram">Load</button>
+        <button id="exportBtn" class="btn btn-secondary" title="Export as JSON">Export</button>
+        <button id="importBtn" class="btn btn-secondary" title="Import from JSON">Import</button>
+        <!-- Add theme toggle button -->
+        <button id="themeToggle" class="theme-toggle" title="Toggle dark/light theme">🌙</button>
+      </div>
+    </header>
+
+    <div class="editor-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <h3 class="section-title">Metadata</h3>
+          <div class="form-group">
+            <label for="authorInput">Author</label>
+            <input type="text" id="authorInput" placeholder="Student" class="input-field">
+          </div>
+          <div class="form-group">
+            <label for="diagramName">Diagram Name</label>
+            <input type="text" id="diagramName" placeholder="Untitled Diagram" class="input-field">
+          </div>
+          <div class="metadata-display">
+            <p><span class="label">Created:</span> <span id="createdTime">-</span></p>
+            <p><span class="label">Modified:</span> <span id="modifiedTime">-</span></p>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3 class="section-title">Node Types</h3>
+          <!-- Updated node palette with configurable inputs/outputs -->
+          <div class="node-palette" id="nodePalette"></div>
+        </div>
+
+        <!-- New section for custom node types -->
+        <div class="sidebar-section">
+          <h3 class="section-title">Create Node Type</h3>
+          <div class="custom-types-section">
+            <div class="custom-type-inputs">
+              <input type="text" id="customNodeName" placeholder="Type name" class="input-field" style="font-size: 0.75rem;"><br>
+              <input type="number" id="customNodeInputs" placeholder="Inputs" min="0" max="10" value="1" class="input-field" style="font-size: 0.75rem;"><br>
+              <input type="number" id="customNodeOutputs" placeholder="Outputs" min="0" max="10" value="1" class="input-field" style="font-size: 0.75rem;"><br>
+              <!-- Added shape selector -->
+              <select id="customNodeShape" class="input-field" style="font-size: 0.75rem;">
+                <option value="rectangle">Rectangle</option>
+                <option value="circle">Circle</option>
+                <option value="diamond">Diamond</option>
+                <option value="parallelogram">Parallelogram</option>
+              </select><br>
+              <input type="color" id="customNodeColor" value="#8b5cf6" class="input-field" style="font-size: 0.75rem; height: 35px;"><br>
+              <!-- Added image upload for custom node types -->
+              <input type="file" id="customNodeImage" accept="image/*" class="input-field" style="font-size: 0.75rem;"><br>
+              <button id="addCustomTypeBtn" class="btn btn-primary" style="font-size: 0.75rem;">Add Type</button>
+            </div>
+            <div class="custom-types-list" id="customTypesList"></div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3 class="section-title">Node Shape Settings</h3>
+          <!-- Added UI for modifying default node shapes -->
+          <div id="nodeShapeSettings"></div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3 class="section-title">Canvas Controls</h3>
+          <button id="clearBtn" class="btn btn-danger">Clear Canvas</button>
+          <button id="undoBtn" class="btn btn-secondary">Undo</button>
+        </div>
+      </aside>
+
+      <!-- Canvas Area -->
+      <main class="canvas-area">
+        <canvas id="diagramCanvas"></canvas>
+        <!-- Updated node editor with more info -->
+        <div id="nodeEditor" class="node-editor hidden">
+          <label for="nodeLabel" style="font-size: 0.75rem; color: var(--text-secondary);">Label</label>
+          <input type="text" id="nodeLabel" placeholder="Node label" maxlength="50">
+          <button id="deleteNodeBtn" class="btn btn-danger">Delete</button>
+          <button id="closeEditorBtn" class="btn btn-secondary">Done</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Hidden inputs for file operations -->
+  <input type="file" id="fileInput" accept=".json" style="display: none;">
+
+  <!-- Save Dialog -->
+  <div id="saveDialog" class="modal hidden">
+    <div class="modal-content">
+      <h2>Save Diagram</h2>
+      <input type="text" id="saveName" placeholder="Enter diagram name" class="input-field">
+      <div class="modal-buttons">
+        <button id="confirmSaveBtn" class="btn btn-primary">Save</button>
+        <button id="cancelSaveBtn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Dialog -->
+  <div id="loadDialog" class="modal hidden">
+    <div class="modal-content">
+      <h2>Load Diagram</h2>
+      <div id="diagramsList" class="diagrams-list"></div>
+      <div class="modal-buttons">
+        <button id="cancelLoadBtn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/themeManager.js"></script>
+  <script src="scripts/nodeTypeManager.js"></script>
+  <script src="scripts/storageManager.js"></script>
+  <script src="scripts/canvas.js"></script>
+</body>
+</html>
