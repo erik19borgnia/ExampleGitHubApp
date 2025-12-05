@@ -170,6 +170,7 @@ class DiagramCanvas {
       this.state.selectedWaypointIndex = null
       this.state.isDraggingNode = true
       this.state.dragStart = { x: mousePos.x - node.position.x, y: mousePos.y - node.position.y }
+      this.render()
       return
     }
 
@@ -213,6 +214,8 @@ class DiagramCanvas {
 
     if (this.state.isDrawingEdge) {
       this.render()
+      const offsetX = this.panOffset.x * this.zoomLevel
+      const offsetY = this.panOffset.y * this.zoomLevel
       const startPort = this.state.edgeStart
       const startNode = this.state.nodes.find((n) => n.id === startPort.nodeId)
       if (startNode) {
@@ -221,8 +224,8 @@ class DiagramCanvas {
           this.ctx.strokeStyle = "#64748b"
           this.ctx.lineWidth = 2
           this.ctx.beginPath()
-          this.ctx.moveTo(startPos.x, startPos.y)
-          this.ctx.lineTo(mousePos.x, mousePos.y)
+          this.ctx.moveTo(startPos.x + offsetX, startPos.y + offsetY)
+          this.ctx.lineTo(mousePos.x + offsetX, mousePos.y + offsetY)
           this.ctx.stroke()
         }
       }
@@ -309,7 +312,7 @@ class DiagramCanvas {
     this.drawEdges()
     this.drawNodes()
 
-    if (this.state.isDrawingEdge && this.state.edgeStart) {
+    /*if (this.state.isDrawingEdge && this.state.edgeStart) {
       const edgeColor = getComputedStyle(document.documentElement).getPropertyValue("--edge-color").trim()
       this.ctx.strokeStyle = edgeColor || "#64748b"
       this.ctx.lineWidth = 2
@@ -322,7 +325,7 @@ class DiagramCanvas {
         this.ctx.stroke()
       }
       this.ctx.setLineDash([])
-    }
+    }*/
 
     this.ctx.restore()
   }
@@ -336,18 +339,18 @@ class DiagramCanvas {
     const offsetY = -Math.floor(this.panOffset.y / this.zoomLevel / GRID_SIZE) * GRID_SIZE
 
     // Draw vertical lines
-    for (let x = offsetX; x < this.canvas.width / this.zoomLevel + Math.abs(offsetX); x += GRID_SIZE) {
+    for (let x = offsetX; x < this.canvas.width / this.zoomLevel + offsetX; x += GRID_SIZE) {
       this.ctx.beginPath()
-      this.ctx.moveTo(x, offsetY)
-      this.ctx.lineTo(x, offsetY + this.canvas.height / this.zoomLevel + Math.abs(offsetY))
+      this.ctx.moveTo(x, offsetY - GRID_SIZE)
+      this.ctx.lineTo(x, offsetY + this.canvas.height / this.zoomLevel)
       this.ctx.stroke()
     }
 
     // Draw horizontal lines
-    for (let y = offsetY; y < this.canvas.height / this.zoomLevel + Math.abs(offsetY); y += GRID_SIZE) {
+    for (let y = offsetY; y < this.canvas.height / this.zoomLevel + offsetY; y += GRID_SIZE) {
       this.ctx.beginPath()
-      this.ctx.moveTo(offsetX, y)
-      this.ctx.lineTo(offsetX + this.canvas.width / this.zoomLevel + Math.abs(offsetX), y)
+      this.ctx.moveTo(offsetX - GRID_SIZE, y)
+      this.ctx.lineTo(offsetX + this.canvas.width / this.zoomLevel, y)
       this.ctx.stroke()
     }
   }
@@ -486,7 +489,7 @@ class DiagramCanvas {
 
   drawCircleNode(node, color, isSelected) {
     this.ctx.fillStyle = color
-    const radius = Math.max(node.width, node.height) / 2
+    const radius = Math.max(node.width, node.height) / 4
     this.ctx.beginPath()
     this.ctx.arc(node.position.x, node.position.y, radius, 0, Math.PI * 2)
     this.ctx.fill()
@@ -630,7 +633,7 @@ class DiagramCanvas {
   }
 
   handleKeyDown(e) {
-    if (e.key === "Delete" || e.key === "Backspace") {
+    if ((e.key === "Delete" || e.key === "Backspace") && document.getElementById("nodeEditor").classList.contains("hidden")) {
       if (this.state.selectedWaypointIndex !== null && this.state.selectedEdgeId !== null) {
         // Delete waypoint
         const edge = this.state.edges.find((e) => e.id === this.state.selectedEdgeId)
@@ -1073,7 +1076,7 @@ class DiagramUI {
 
   // Keyboard handler for Delete key
   handleKeyDown(e) {
-    if (e.key === "Delete" || e.key === "Backspace") {
+    if ((e.key === "Delete" || e.key === "Backspace") && document.getElementById("nodeEditor").classList.contains("hidden")) {
       const selectedId = this.canvas.getSelectedNodeId()
       if (selectedId) {
         e.preventDefault()
@@ -1149,5 +1152,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update theme button icon on load
     themeManager.updateThemeButtonIcon();
+    diagramCanvas.render();
   }
 })
