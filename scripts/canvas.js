@@ -57,6 +57,8 @@ class DiagramCanvas {
 
   getMousePos(e) {
     const rect = this.canvas.getBoundingClientRect()
+    console.log("X: "+(e.clientX - rect.left - this.panOffset.x) / this.zoomLevel)
+    console.log("Y: "+(e.clientY - rect.top - this.panOffset.y) / this.zoomLevel)
     return {
       x: (e.clientX - rect.left - this.panOffset.x) / this.zoomLevel,
       y: (e.clientY - rect.top - this.panOffset.y) / this.zoomLevel,
@@ -214,8 +216,9 @@ class DiagramCanvas {
 
     if (this.state.isDrawingEdge) {
       this.render()
-      const offsetX = this.panOffset.x * this.zoomLevel
-      const offsetY = this.panOffset.y * this.zoomLevel
+      console.log(this.panOffset)
+      const offsetX = this.panOffset.x
+      const offsetY = this.panOffset.y
       const startPort = this.state.edgeStart
       const startNode = this.state.nodes.find((n) => n.id === startPort.nodeId)
       if (startNode) {
@@ -224,8 +227,11 @@ class DiagramCanvas {
           this.ctx.strokeStyle = "#64748b"
           this.ctx.lineWidth = 2
           this.ctx.beginPath()
-          this.ctx.moveTo(startPos.x + offsetX, startPos.y + offsetY)
-          this.ctx.lineTo(mousePos.x + offsetX, mousePos.y + offsetY)
+          this.ctx.moveTo(startPos.x*this.zoomLevel + offsetX, startPos.y*this.zoomLevel + offsetY)
+          this.ctx.lineTo(mousePos.x*this.zoomLevel + offsetX, mousePos.y*this.zoomLevel + offsetY)
+          //test line from 0,0 to 60,60
+          //this.ctx.moveTo(0*this.zoomLevel  + offsetX, 0*this.zoomLevel + offsetY)
+          //this.ctx.lineTo(60*this.zoomLevel  + offsetX, 60*this.zoomLevel + offsetY)
           this.ctx.stroke()
         }
       }
@@ -618,7 +624,7 @@ class DiagramCanvas {
   handleWheel(e) {
     e.preventDefault()
     const delta = e.deltaY < 0 ? 0.1 : -0.1
-    const newZoom = Math.max(0.5, Math.min(3, this.zoomLevel + delta))
+    const newZoom = Math.max(0.4, Math.min(1.5, this.zoomLevel + delta))
     const zoomChange = newZoom / this.zoomLevel
 
     const rect = this.canvas.getBoundingClientRect()
