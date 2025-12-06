@@ -57,8 +57,6 @@ class DiagramCanvas {
 
   getMousePos(e) {
     const rect = this.canvas.getBoundingClientRect()
-    console.log("X: "+(e.clientX - rect.left - this.panOffset.x) / this.zoomLevel)
-    console.log("Y: "+(e.clientY - rect.top - this.panOffset.y) / this.zoomLevel)
     return {
       x: (e.clientX - rect.left - this.panOffset.x) / this.zoomLevel,
       y: (e.clientY - rect.top - this.panOffset.y) / this.zoomLevel,
@@ -147,21 +145,21 @@ class DiagramCanvas {
       return
     }
 
+    const port = this.getPortAtPosition(mousePos)
+    if (port && port.isOutput) {
+      this.state.isDrawingEdge = true
+      this.state.edgeStart = port
+      this.state.selectedEdgeId = null
+      this.state.selectedNodeId = null
+      return
+    }
+
     const edgeHit = this.getEdgeAtPosition(mousePos)
     if (edgeHit !== null) {
       this.state.selectedEdgeId = this.state.edges[edgeHit].id
       this.state.selectedNodeId = null
       this.state.selectedWaypointIndex = null
       this.render()
-      return
-    }
-
-    const port = this.getPortAtPosition(mousePos)
-    if (port) {
-      this.state.isDrawingEdge = true
-      this.state.edgeStart = port
-      this.state.selectedEdgeId = null
-      this.state.selectedNodeId = null
       return
     }
 
@@ -216,29 +214,32 @@ class DiagramCanvas {
 
     if (this.state.isDrawingEdge) {
       this.render()
-      console.log(this.panOffset)
-      const offsetX = this.panOffset.x
-      const offsetY = this.panOffset.y
-      const startPort = this.state.edgeStart
-      const startNode = this.state.nodes.find((n) => n.id === startPort.nodeId)
-      if (startNode) {
-        const startPos = this.getPortPosition(startNode, startPort.isOutput, startPort.portIndex)
-        if (startPos) {
-          this.ctx.strokeStyle = "#64748b"
-          this.ctx.lineWidth = 2
-          this.ctx.beginPath()
-          this.ctx.moveTo(startPos.x*this.zoomLevel + offsetX, startPos.y*this.zoomLevel + offsetY)
-          this.ctx.lineTo(mousePos.x*this.zoomLevel + offsetX, mousePos.y*this.zoomLevel + offsetY)
-          //test line from 0,0 to 60,60
-          //this.ctx.moveTo(0*this.zoomLevel  + offsetX, 0*this.zoomLevel + offsetY)
-          //this.ctx.lineTo(60*this.zoomLevel  + offsetX, 60*this.zoomLevel + offsetY)
-          this.ctx.stroke()
-        }
-      }
+      this.renderDrawingEdge(mousePos)
       return
     }
+    const port = this.getPortAtPosition(mousePos)
+    this.canvas.style.cursor = (port && port.isOutput) ? "pointer" : "default"
+  }
 
-    this.canvas.style.cursor = this.getPortAtPosition(mousePos) ? "pointer" : "default"
+  renderDrawingEdge(endPos){
+    const offsetX = this.panOffset.x
+    const offsetY = this.panOffset.y
+    const startPort = this.state.edgeStart
+    const startNode = this.state.nodes.find((n) => n.id === startPort.nodeId)
+    if (startNode) {
+      const startPos = this.getPortPosition(startNode, startPort.isOutput, startPort.portIndex)
+      if (startPos) {
+        const edgeColor = getComputedStyle(document.documentElement).getPropertyValue("--edge-color").trim()
+        this.ctx.strokeStyle = edgeColor || "#64748b"
+        this.ctx.lineWidth = 2
+        this.ctx.setLineDash([5*this.zoomLevel, 5*this.zoomLevel])
+        this.ctx.beginPath()
+        this.ctx.moveTo(startPos.x*this.zoomLevel + offsetX, startPos.y*this.zoomLevel + offsetY)
+        this.ctx.lineTo(endPos.x*this.zoomLevel + offsetX, endPos.y*this.zoomLevel + offsetY)
+        this.ctx.stroke()
+        this.ctx.setLineDash([])
+      }
+    }
   }
 
   handleMouseUp(e) {
@@ -259,26 +260,28 @@ class DiagramCanvas {
     if (this.state.isDrawingEdge) {
       const port = this.getPortAtPosition(mousePos)
       if (port && !port.isOutput && this.state.edgeStart.isOutput) {
-        if (port.nodeId !== this.state.edgeStart.nodeId) {
-          const existingConnection = this.state.edges.find(
-            (edge) =>
-              edge.from.nodeId === this.state.edgeStart.nodeId &&
-              edge.from.portIndex === this.state.edgeStart.portIndex,
-          )
-
-          if (!existingConnection) {
-            this.state.edges = this.state.edges.filter(
-              (edge) => !(edge.to.nodeId === port.nodeId && edge.to.portIndex === port.portIndex),
-            )
-
-            this.state.edges.push({
-              id: `edge-${Date.now()}`,
-              from: this.state.edgeStart,
-              to: port,
-              waypoints: [],
-            })
-          }
+        let newWaypoints = []
+        if (port.nodeId === this.state.edgeStart.nodeId) {
+          //If it's the same node, we should create a waypoint to be able to see the edge.
+          const node = this.getNodeByID(port.nodeId)
+          const newX = node.position.x - node.width
+          newWaypoints.push({ x: newX, y: node.position.y+node.height })
+          newWaypoints.push({ x: newX, y: node.position.y-node.height })
         }
+        this.state.edges = this.state.edges.filter(
+          (edge) =>
+            !(edge.from.nodeId === this.state.edgeStart.nodeId &&
+            edge.from.portIndex === this.state.edgeStart.portIndex),
+        )
+
+          this.state.edges.push({
+          id: `edge-${Date.now()}`,
+          from: this.state.edgeStart,
+          to: port,
+          waypoints: newWaypoints,
+        })
+        
+        //
       }
       this.state.isDrawingEdge = false
       this.state.edgeStart = null
@@ -290,14 +293,24 @@ class DiagramCanvas {
     this.state.dragStart = null
   }
 
+  getNodeByID(id){
+    let i = 0
+    while ((i<this.state.nodes.length) && this.state.nodes[i].id != id)
+      i++
+    if (i<this.state.nodes.length){
+      return this.state.nodes[i]
+    } else
+      return null
+  }
+
   getNodeAtPosition(pos) {
-    for (let i = this.state.nodes.length - 1; i >= 0; i--) {
-      const node = this.state.nodes[i]
-      if (this.isPointInNode(pos, node)) {
-        return node
-      }
-    }
-    return null
+    let i = 0
+    while ((i<this.state.nodes.length) && !this.isPointInNode(pos, this.state.nodes[i]))
+      i++
+    if (i<this.state.nodes.length)
+      return this.state.nodes[i]
+    else
+      return null
   }
 
   isPointInNode(pos, node) {
@@ -317,21 +330,6 @@ class DiagramCanvas {
     this.drawGrid()
     this.drawEdges()
     this.drawNodes()
-
-    /*if (this.state.isDrawingEdge && this.state.edgeStart) {
-      const edgeColor = getComputedStyle(document.documentElement).getPropertyValue("--edge-color").trim()
-      this.ctx.strokeStyle = edgeColor || "#64748b"
-      this.ctx.lineWidth = 2
-      this.ctx.setLineDash([5, 5])
-      const startNode = this.state.nodes.find((n) => n.id === this.state.edgeStart.nodeId)
-      if (startNode) {
-        const portPos = this.getPortPosition(startNode, true, this.state.edgeStart.portIndex)
-        this.ctx.beginPath()
-        this.ctx.moveTo(portPos.x, portPos.y)
-        this.ctx.stroke()
-      }
-      this.ctx.setLineDash([])
-    }*/
 
     this.ctx.restore()
   }
@@ -1143,21 +1141,21 @@ class DiagramUI {
 
 // ============ Application Initialization ============
 document.addEventListener("DOMContentLoaded", () => {
-  const canvasElement = document.getElementById("diagramCanvas");
+  const canvasElement = document.getElementById("diagramCanvas")
 
   if (canvasElement) {
-    const themeManager = new ThemeManager();
-    const nodeTypeManager = new NodeTypeManager(canvasElement);
-    const diagramCanvas = new DiagramCanvas(canvasElement, nodeTypeManager);
-    const diagramUI = new DiagramUI(diagramCanvas, nodeTypeManager, themeManager);
+    const themeManager = new ThemeManager()
+    const nodeTypeManager = new NodeTypeManager(canvasElement)
+    const diagramCanvas = new DiagramCanvas(canvasElement, nodeTypeManager)
+    const diagramUI = new DiagramUI(diagramCanvas, nodeTypeManager, themeManager)
 
     const authorInput = document.getElementById("authorInput")
     if (!authorInput.value) {
-      authorInput.value = "Student";
+      authorInput.value = "Student"
     }
 
     // Update theme button icon on load
-    themeManager.updateThemeButtonIcon();
-    diagramCanvas.render();
+    themeManager.updateThemeButtonIcon()
+    diagramCanvas.render()
   }
 })
