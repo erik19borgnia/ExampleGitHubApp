@@ -3,9 +3,10 @@ class NodeTypeManager {
     this.canvasInstance = canvasInstance
     this.customTypes = this.loadCustomTypes()
     this.defaultTypes = {
+      start: { inputs: 0, outputs: 1, label: "Start", shape: "circle", shapeColor: "#10b981" },
       process: { inputs: 1, outputs: 1, label: "Process", shape: "rectangle", shapeColor: "#3b82f6" },
       decision: { inputs: 1, outputs: 2, label: "Decision", shape: "diamond", shapeColor: "#f59e0b" },
-      start: { inputs: 0, outputs: 1, label: "Start/End", shape: "circle", shapeColor: "#10b981" },
+      end: { inputs: 1, outputs: 0, label: "End", shape: "circle", shapeColor: "#b82626ff" },
     }
   }
 
