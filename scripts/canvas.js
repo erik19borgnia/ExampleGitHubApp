@@ -562,7 +562,8 @@ class DiagramCanvas {
       id,
       type,
       label,
-      position: { x: this.canvas.width / 2, y: this.canvas.height / 2 },
+      position: { x: (this.canvas.width/2 - this.panOffset.x)/this.zoomLevel, y: (this.canvas.height/2 - this.panOffset.y)/this.zoomLevel },
+      //position: { x: this.canvas.width / 2, y: this.canvas.height / 2 },
       width: NODE_WIDTH,
       height: NODE_HEIGHT,
     })
@@ -798,7 +799,6 @@ class DiagramUI {
     document.getElementById("exportBtn").addEventListener("click", () => this.exportDiagram())
     document.getElementById("importBtn").addEventListener("click", () => this.triggerImport())
     document.getElementById("clearBtn").addEventListener("click", () => this.clearCanvas())
-    document.getElementById("undoBtn").addEventListener("click", () => alert("Undo functionality coming soon!"))
 
     // Node editor
     document.getElementById("closeEditorBtn").addEventListener("click", () => this.closeNodeEditor())
