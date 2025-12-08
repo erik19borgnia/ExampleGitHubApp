@@ -9,8 +9,8 @@ let gisInited = false;
  * Enables user interaction after all libraries are loaded.
  */
 function maybeEnableButtons() {
-    console.log("GAPI "+gapiInited)
-    console.log("GIS "+gisInited)
+    //console.log("GAPI "+gapiInited)
+    //console.log("GIS "+gisInited)
     if (gapiInited && gisInited) {
         document.getElementById("googleAuthorizeBtn").classList.remove("hidden")
         document.getElementById("googleAuthorizeBtn").addEventListener("click", () => handleAuthClick())
