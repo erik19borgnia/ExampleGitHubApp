@@ -1,13 +1,5 @@
 function gapiLoaded() {
-    console.log("Holis")
     gapi.load('client', initializeGapiClient)
-    if (gapi.auth2 == null)
-        console.log("null")
-    console.log("Chau")
-    document.getElementById("exportBtnDrive").classList.remove("hidden")
-    document.getElementById("importBtnDrive").classList.remove("hidden")
-    document.getElementById("exportBtnDrive").addEventListener("click", () => exportToDrive())
-    document.getElementById("importBtnDrive").addEventListener("click", () => importFromDrive())
     
 }
 
@@ -22,6 +14,11 @@ async function initializeGapiClient() {
     // Handle user sign-in/out
     gapi.auth2.getAuthInstance().isSignedIn.listen(updateSignInStatus);
     updateSignInStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+    console.log("Gapi initialized!")
+    document.getElementById("exportBtnDrive").classList.remove("hidden")
+    document.getElementById("importBtnDrive").classList.remove("hidden")
+    document.getElementById("exportBtnDrive").addEventListener("click", () => exportToDrive())
+    document.getElementById("importBtnDrive").addEventListener("click", () => importFromDrive())
 }
 
 function handleAuthClick() {
