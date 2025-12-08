@@ -833,7 +833,7 @@ class DiagramUI {
 
     document.getElementById("customNodeShape").addEventListener("change", (e) => {
       const shape = e.target.value
-      document.getElementById("customNodeColor").style.display = shape === "rectangle" ? "block" : "none"
+      document.getElementById("customNodeColor").style.display = "block"//shape === "rectangle" ? "block" : "none"
     })
 
     document.getElementById("customNodeImage").addEventListener("change", (e) => {

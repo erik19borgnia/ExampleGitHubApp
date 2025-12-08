@@ -135,6 +135,17 @@ body {
   background-color: var(--secondary-hover);
 }
 
+.btn-drive {
+  background-image: url('../img/drive.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+  padding-left: 35px;
+}
+
+.btn-drive.hidden {
+  display: none;
+}
+
 .btn-danger {
   background-color: var(--danger);
   color: var(--node-text);
