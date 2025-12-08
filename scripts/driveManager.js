@@ -1,7 +1,7 @@
 function gapiLoaded() {
     console.log("Holis")
     gapi.load('client', initializeGapiClient)
-    if (gapi.client == null)
+    if (gapi.auth2 == null)
         console.log("null")
     console.log("Chau")
     document.getElementById("exportBtnDrive").classList.remove("hidden")
