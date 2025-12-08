@@ -100,6 +100,7 @@ function handleSignoutClick() {
     if (token !== null) {
         google.accounts.oauth2.revoke(token.access_token);
         gapi.client.setToken('');
+        localStorage.removeItem('googleCredentials')
         //document.getElementById('content').innerText = '';
         document.getElementById('googleAuthorizeBtn').innerText = 'Login';
         document.getElementById('googleLogoutBtn').classList.add("hidden")
