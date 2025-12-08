@@ -14,8 +14,6 @@ function maybeEnableButtons() {
     if (gapiInited && gisInited) {
         document.getElementById("googleAuthorizeBtn").classList.remove("hidden")
         document.getElementById("googleAuthorizeBtn").addEventListener("click", () => handleAuthClick())
-        document.getElementById("exportDriveBtn").classList.remove("hidden")
-        document.getElementById("importDriveBtn").classList.remove("hidden")
     }
 }
 
@@ -63,7 +61,10 @@ function handleAuthClick() {
         if (resp.error !== undefined) {
         throw (resp);
         }
+        document.getElementById("exportDriveBtn").classList.remove("hidden")
+        document.getElementById("importDriveBtn").classList.remove("hidden")
         document.getElementById('googleLogoutBtn').classList.remove("hidden")
+        document.getElementById("googleLogoutBtn").addEventListener("click", () => handleSignoutClick())
         document.getElementById('googleAuthorizeBtn').innerText = 'Refresh';
         await listFiles();
     };
@@ -94,6 +95,7 @@ function handleSignoutClick() {
 
 /**
  * Print metadata for first 10 files.
+ * TO DO
  */
 async function listFiles() {
     let response;
