@@ -15,8 +15,8 @@ function maybeEnableButtons() {
         document.getElementById("googleAuthorizeBtn").classList.remove("hidden")
         document.getElementById("googleAuthorizeBtn").addEventListener("click", () => handleAuthClick())
         document.getElementById("googleLogoutBtn").addEventListener("click", () => handleSignoutClick())
-        document.getElementById("exportBtnDrive").addEventListener("click", () => exportToDrive())
-        document.getElementById("importBtnDrive").addEventListener("click", () => importFromDrive())
+        document.getElementById("exportDriveBtn").addEventListener("click", () => exportToDrive())
+        document.getElementById("importDriveBtn").addEventListener("click", () => importFromDrive())
     }
 }
 
