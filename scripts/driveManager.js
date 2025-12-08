@@ -41,6 +41,12 @@ async function initializeGapiClient() {
     //console.log("Gapi 4")
     gapiInited = true;
     maybeEnableButtons();
+    let credentials = localStorage.getItem('googleCredentials');
+    if (credentials) {
+      credentials = JSON.parse(credentials);
+      gapi.client.setToken(credentials);
+      loggedIn();
+    }
 }
 
 /**
@@ -64,11 +70,8 @@ function handleAuthClick() {
         if (resp.error !== undefined) {
         throw (resp);
         }
-        document.getElementById("exportDriveBtn").classList.remove("hidden")
-        document.getElementById("importDriveBtn").classList.remove("hidden")
-        document.getElementById('googleLogoutBtn').classList.remove("hidden")
-        document.getElementById('googleAuthorizeBtn').innerText = 'Refresh';
-        await listFiles();
+        localStorage.setItem('googleCredentials', JSON.stringify(resp));
+        loggedIn();
     };
 
     if (gapi.client.getToken() === null) {
@@ -79,6 +82,14 @@ function handleAuthClick() {
         // Skip display of account chooser and consent dialog for an existing session.
         tokenClient.requestAccessToken({prompt: ''});
     }
+}
+
+async function loggedIn(){
+    document.getElementById("exportDriveBtn").classList.remove("hidden")
+    document.getElementById("importDriveBtn").classList.remove("hidden")
+    document.getElementById('googleLogoutBtn').classList.remove("hidden")
+    document.getElementById('googleAuthorizeBtn').innerText = 'Refresh';
+    await listFiles();
 }
 
 /**
