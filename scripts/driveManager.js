@@ -32,8 +32,8 @@ function handleSignoutClick() {
 }
 
 function exportToDrive(){
-    console.log("Export!")
     handleAuthClick()
+    console.log("Export!")
 }
 
 function importFromDrive(){
