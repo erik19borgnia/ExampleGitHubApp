@@ -20,6 +20,7 @@ async function initializeGapiClient() {
         updateSignInStatus(gapi.auth2.getAuthInstance().isSignedIn.get())
         console.log("Gapi initialized!")
     }catch(error){
+        console.log("Sh*t")
         console.error(error)
     }
 }
