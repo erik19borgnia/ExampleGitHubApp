@@ -14,6 +14,9 @@ function maybeEnableButtons() {
     if (gapiInited && gisInited) {
         document.getElementById("googleAuthorizeBtn").classList.remove("hidden")
         document.getElementById("googleAuthorizeBtn").addEventListener("click", () => handleAuthClick())
+        document.getElementById("googleLogoutBtn").addEventListener("click", () => handleSignoutClick())
+        document.getElementById("exportBtnDrive").addEventListener("click", () => exportToDrive())
+        document.getElementById("importBtnDrive").addEventListener("click", () => importFromDrive())
     }
 }
 
@@ -64,7 +67,6 @@ function handleAuthClick() {
         document.getElementById("exportDriveBtn").classList.remove("hidden")
         document.getElementById("importDriveBtn").classList.remove("hidden")
         document.getElementById('googleLogoutBtn').classList.remove("hidden")
-        document.getElementById("googleLogoutBtn").addEventListener("click", () => handleSignoutClick())
         document.getElementById('googleAuthorizeBtn').innerText = 'Refresh';
         await listFiles();
     };
@@ -87,9 +89,11 @@ function handleSignoutClick() {
     if (token !== null) {
         google.accounts.oauth2.revoke(token.access_token);
         gapi.client.setToken('');
-        document.getElementById('content').innerText = '';
+        //document.getElementById('content').innerText = '';
         document.getElementById('googleAuthorizeBtn').innerText = 'Login';
         document.getElementById('googleLogoutBtn').classList.add("hidden")
+        document.getElementById("exportDriveBtn").classList.add("hidden")
+        document.getElementById("importDriveBtn").classList.add("hidden")
     }
 }
 
@@ -105,57 +109,20 @@ async function listFiles() {
         'fields': 'files(id, name)',
         });
     } catch (err) {
-        document.getElementById('content').innerText = err.message;
+        //document.getElementById('content').innerText = err.message;
         return;
     }
     const files = response.result.files;
     if (!files || files.length == 0) {
-        document.getElementById('content').innerText = 'No files found.';
+        //document.getElementById('content').innerText = 'No files found.';
         return;
     }
     // Flatten to string to display
     const output = files.reduce(
         (str, file) => `${str}${file.name} (${file.id})\n`,
         'Files:\n');
-    document.getElementById('content').innerText = output;
+    //document.getElementById('content').innerText = output;
 }
-
-
-/*function gapiLoaded() {
-    document.getElementById("exportBtnDrive").classList.remove("hidden")
-    document.getElementById("importBtnDrive").classList.remove("hidden")
-    document.getElementById("exportBtnDrive").addEventListener("click", () => exportToDrive())
-    document.getElementById("importBtnDrive").addEventListener("click", () => importFromDrive())
-    gapi.load('client', initializeGapiClient)   
-}
-
-async function initializeGapiClient() {
-    try{
-        await gapi.client.init({
-            apiKey: 'AIzaSyD0J6RzL4kQHee5EOLAjNZROXj6wIeNCqs', // Optional, if using only OAuth
-            clientId: '253006367900-afh5cqbmqhuvse3n6grt0hch5tahinu7.apps.googleusercontent.com',
-            scope: 'https://www.googleapis.com/auth/drive.file', // Read/Write only created files
-            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-        })
-        console.log("Init done")
-        gapi.client.setApiKey('AIzaSyD0J6RzL4kQHee5EOLAjNZROXj6wIeNCqs') // If using an API key
-        // Handle user sign-in/out
-        gapi.auth2.getAuthInstance().isSignedIn.listen(updateSignInStatus)
-        updateSignInStatus(gapi.auth2.getAuthInstance().isSignedIn.get())
-        console.log("Gapi initialized!")
-    }catch(error){
-        console.log("Sh*t")
-        console.error(error)
-    }
-}
-
-function handleAuthClick() {
-    gapi.auth2.getAuthInstance().signIn()
-}
-
-function handleSignoutClick() {
-    gapi.auth2.getAuthInstance().signOut()
-}*/
 
 function exportToDrive(){
     console.log("Export!")
