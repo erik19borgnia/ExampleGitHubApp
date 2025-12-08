@@ -14,6 +14,7 @@ async function initializeGapiClient() {
             scope: 'https://www.googleapis.com/auth/drive', // Or more specific scopes like drive.file
             discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
         })
+        console.log("Init done")
         gapi.client.setApiKey('AIzaSyD0J6RzL4kQHee5EOLAjNZROXj6wIeNCqs') // If using an API key
         // Handle user sign-in/out
         gapi.auth2.getAuthInstance().isSignedIn.listen(updateSignInStatus)
