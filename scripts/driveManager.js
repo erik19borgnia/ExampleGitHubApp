@@ -3,11 +3,8 @@ function gapiLoaded() {
     document.getElementById("importBtnDrive").classList.remove("hidden")
     document.getElementById("exportBtnDrive").addEventListener("click", () => exportToDrive())
     document.getElementById("importBtnDrive").addEventListener("click", () => importFromDrive())
-    try{
-        gapi.load('client:auth2', initializeGapiClient)
-    }catch(error){
-        console.log(error)
-    }
+    gapi.load('client:auth2', initializeGapiClient)
+    
 }
 
 async function initializeGapiClient() {
