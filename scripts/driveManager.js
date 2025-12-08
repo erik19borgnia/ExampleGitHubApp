@@ -12,8 +12,10 @@ function maybeEnableButtons() {
     console.log("GAPI "+gapiInited)
     console.log("GIS "+gisInited)
     if (gapiInited && gisInited) {
-        document.getElementById("exportBtnDrive").classList.remove("hidden")
-        document.getElementById("importBtnDrive").classList.remove("hidden")
+        document.getElementById("googleAuthorizeBtn").classList.remove("hidden")
+        document.getElementById("googleAuthorizeBtn").addEventListener("click", () => handleAuthClick())
+        document.getElementById("exportDriveBtn").classList.remove("hidden")
+        document.getElementById("importDriveBtn").classList.remove("hidden")
     }
 }
 
@@ -21,9 +23,9 @@ function maybeEnableButtons() {
  * Callback after api.js is loaded.
  */
 function gapiLoaded() {
-    console.log("Gapi 1")
+    //console.log("Gapi 1")
     gapi.load('client', initializeGapiClient);
-    console.log("Gapi 2")
+    //console.log("Gapi 2")
 }
 
 /**
@@ -31,11 +33,11 @@ function gapiLoaded() {
  * discovery doc to initialize the API.
  */
 async function initializeGapiClient() {
-    console.log("Gapi 3")
+    //console.log("Gapi 3")
     await gapi.client.init({
         discoveryDocs: [DISCOVERY_DOC],
     });
-    console.log("Gapi 4")
+    //console.log("Gapi 4")
     gapiInited = true;
     maybeEnableButtons();
 }
@@ -61,8 +63,8 @@ function handleAuthClick() {
         if (resp.error !== undefined) {
         throw (resp);
         }
-        document.getElementById('signout_button').style.visibility = 'visible';
-        document.getElementById('authorize_button').innerText = 'Refresh';
+        document.getElementById('googleLogoutBtn').classList.remove("hidden")
+        document.getElementById('googleAuthorizeBtn').innerText = 'Refresh';
         await listFiles();
     };
 
@@ -85,8 +87,8 @@ function handleSignoutClick() {
         google.accounts.oauth2.revoke(token.access_token);
         gapi.client.setToken('');
         document.getElementById('content').innerText = '';
-        document.getElementById('authorize_button').innerText = 'Authorize';
-        document.getElementById('signout_button').style.visibility = 'hidden';
+        document.getElementById('googleAuthorizeBtn').innerText = 'Login';
+        document.getElementById('googleLogoutBtn').classList.add("hidden")
     }
 }
 
