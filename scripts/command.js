@@ -5,7 +5,6 @@ const maxUndoSize = 100
 //Redo stack doesn't need a limit, it's bounded by undoStack
 
 class Command{
-
     static undo(){
         if (undoStack.length === 0)
             throw new Error("No actions to undo")

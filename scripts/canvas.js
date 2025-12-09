@@ -3,6 +3,48 @@ const NODE_WIDTH = 120
 const NODE_HEIGHT = 60
 const PORT_RADIUS = 6
 
+class EditLabelCommand extends Command{
+  constructor(canvas,nodeID,newName){
+    super()
+    this.canvas = canvas
+    this.nodeID = nodeID
+    this.oldName = this.canvas.getNodeByID(this.nodeID).label
+    this.newName = newName
+  }
+  action(){
+    this.canvas.getNodeByID(this.nodeID).label = this.newName
+    this.canvas.render()
+  }
+  reverseAction(){
+    this.canvas.getNodeByID(this.nodeID).label = this.oldName
+    this.canvas.render()
+  }
+}
+class DeleteNodeCommand extends Command{
+  constructor(canvas,nodeID){
+    super()
+    this.canvas = canvas
+    this.node = this.canvas.getNodeByID(nodeID)
+    this.edges = this.canvas.state.edges.filter((e) => e.from.nodeId == nodeID || e.to.nodeId == nodeID)
+  }
+  action(){
+    console.log(this.node)
+    console.log(this.edges)
+    this.canvas.state.nodes = this.canvas.state.nodes.filter((n) => n.id !== this.node.id)
+    if (this.edges.length>0)
+      this.canvas.state.edges = this.canvas.state.edges.filter((e) => e.from.nodeId !== this.node.id && e.to.nodeId !== this.node.id)
+    this.canvas.state.selectedNodeId = null
+    this.canvas.render()
+  }
+  reverseAction(){
+    console.log(this.node)
+    console.log(this.edges)
+    this.canvas.state.nodes.push(this.node)
+    this.edges.forEach((edge) => {this.canvas.state.edges.push(edge)})      
+    this.canvas.state.selectedNodeId = this.node.id
+    this.canvas.render()
+  }
+}
 
 // ============ Canvas Management ============
 class DiagramCanvas {
@@ -302,6 +344,7 @@ class DiagramCanvas {
       return this.state.nodes[i]
     } else
       return null
+    //return this.state.nodes.find((n) => n.id === id)
   }
 
   getNodeAtPosition(pos) {
@@ -573,18 +616,7 @@ class DiagramCanvas {
   }
 
   deleteNode(id) {
-    this.state.nodes = this.state.nodes.filter((n) => n.id !== id)
-    this.state.edges = this.state.edges.filter((e) => e.from.nodeId !== id && e.to.nodeId !== id)
-    this.state.selectedNodeId = null
-    this.render()
-  }
-
-  updateNodeLabel(id, label) {
-    const node = this.state.nodes.find((n) => n.id === id)
-    if (node) {
-      node.label = label
-      this.render()
-    }
+    new DeleteNodeCommand(this,id).execute()
   }
 
   getSelectedNodeId() {
@@ -655,15 +687,7 @@ class DiagramCanvas {
         this.render()
       } else if (this.state.selectedNodeId) {
         // Delete node
-        const node = this.state.nodes.find((n) => n.id === this.state.selectedNodeId)
-        if (node) {
-          this.state.nodes = this.state.nodes.filter((n) => n.id !== this.state.selectedNodeId)
-          this.state.edges = this.state.edges.filter(
-            (edge) => edge.from.nodeId !== node.id && edge.to.nodeId !== node.id,
-          )
-          this.state.selectedNodeId = null
-          this.render()
-        }
+        this.deleteNode(this.state.selectedNodeId)
       }
     }
   }
@@ -789,7 +813,7 @@ class DiagramUI {
     })
 
     document.getElementById("addCustomTypeBtn").addEventListener("click", () => this.addCustomNodeType())
-    document.getElementById("customNodeName").addEventListener("keypress", (e) => {
+    document.getElementById("customNodeName").addEventListener("keydown", (e) => {
       if (e.key === "Enter") this.addCustomNodeType()
     })
 
@@ -798,7 +822,7 @@ class DiagramUI {
     document.getElementById("loadBtn").addEventListener("click", () => this.showLoadDialog())
     document.getElementById("exportBtn").addEventListener("click", () => this.exportDiagram())
     document.getElementById("importBtn").addEventListener("click", () => this.triggerImport())
-    document.getElementById("clearBtn").addEventListener("click", () => this.showClearCanvasDialog())
+    document.getElementById("clearDiagramBtn").addEventListener("click", () => this.showClearCanvasDialog())
 
     // Save dialog
     document.getElementById("confirmClearDiagramBtn").addEventListener("click", () => this.confirmClearCanvas())
@@ -809,15 +833,16 @@ class DiagramUI {
     document.getElementById("deleteNodeBtn").addEventListener("click", () => this.deleteSelectedNode())
 
     // Keyboard listener for Delete key and label editing
-    document.addEventListener("keydown", (e) => this.handleKeyDown(e))
     document.addEventListener("editNodeLabel", (e) => this.editNodeLabel(e.detail.nodeId))
 
     // Listener for label input changes
-    document.getElementById("nodeLabel").addEventListener("change", (e) => {
-      const id = this.canvas.getSelectedNodeId()
-      if (id) {
-        this.canvas.updateNodeLabel(id, e.target.value)
-        this.closeNodeEditor()
+    document.getElementById("nodeLabel").addEventListener("keydown", (e) => {
+      if (e.key === "Enter"){
+        const id = this.canvas.getSelectedNodeId()
+        if (id) {
+          new EditLabelCommand(this.canvas, this.canvas.getSelectedNodeId(),e.target.value).execute()
+          this.closeNodeEditor()
+        }
       }
     })
 
@@ -1088,18 +1113,6 @@ class DiagramUI {
     }
   }
 
-  // Keyboard handler for Delete key
-  handleKeyDown(e) {
-    if ((e.key === "Delete" || e.key === "Backspace") && document.getElementById("nodeEditor").classList.contains("hidden")) {
-      const selectedId = this.canvas.getSelectedNodeId()
-      if (selectedId) {
-        e.preventDefault()
-        this.canvas.deleteNode(selectedId)
-        this.closeNodeEditor()
-      }
-    }
-  }
-
   // Method to edit node label
   editNodeLabel(nodeId) {
     const node = this.canvas.state.nodes.find((n) => n.id === nodeId)
@@ -1127,25 +1140,9 @@ class DiagramUI {
 
   updateMetadataDisplay() {
     const now = new Date()
-    document.getElementById("createdTime").textContent = "Now"
-    document.getElementById("modifiedTime").textContent = now.toLocaleString()
-  }
-
-  openNodeEditor(nodeId) {
-    const node = this.canvas.state.nodes.find((n) => n.id === nodeId)
-    if (node) {
-      document.getElementById("nodeEditor").classList.remove("hidden")
-      document.getElementById("nodeLabelInput").value = node.label
-      document.getElementById("nodeLabelInput").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") this.updateNodeLabel(nodeId)
-      })
-    }
-  }
-
-  updateNodeLabel(nodeId) {
-    const label = document.getElementById("nodeLabelInput").value.trim()
-    this.canvas.updateNodeLabel(nodeId, label)
-    this.closeNodeEditor()
+    
+    document.getElementById("createdTime").textContent = "Today "+now.toLocaleTimeString([],{ hour12: false })
+    document.getElementById("modifiedTime").textContent = now.toLocaleString([],{ hour12: false })
   }
 }
 
