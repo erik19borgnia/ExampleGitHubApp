@@ -1,10 +1,10 @@
 const THEME_KEY = "theme"
 
-const ThemeManager = {
+const ThemeManager = new class {
   constructor() {
     this.currentTheme = localStorage.getItem(THEME_KEY) || "dark"
     this.applyTheme()
-  },
+  }
 
   applyTheme() {
     const html = document.documentElement
@@ -13,14 +13,14 @@ const ThemeManager = {
     } else {
       html.classList.remove("light-theme")
     }
-  },
+  }
 
   toggle() {
     this.currentTheme = this.currentTheme === "dark" ? "light" : "dark"
     localStorage.setItem(THEME_KEY, this.currentTheme)
     this.applyTheme()
     this.updateThemeButtonIcon()
-  },
+  }
 
   updateThemeButtonIcon() {
     const btn = document.getElementById("themeToggle")

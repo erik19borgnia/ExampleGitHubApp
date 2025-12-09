@@ -14,11 +14,11 @@ class Command{
         redoStack.push(com)
         const redoButton = document.getElementById("redoBtn")
         if (redoButton)
-            redoButton.classList.add("enabled")
+            redoButton.disabled = false
         if (undoStack.length === 0){
             const undoButton = document.getElementById("undoBtn")
             if (undoButton)
-                undoButton.classList.remove("enabled")
+                undoButton.disabled = true
         }
     }
     static redo(){
@@ -29,11 +29,11 @@ class Command{
         undoStack.push(com)
         const undoButton = document.getElementById("undoBtn")
         if (undoButton)
-            undoButton.classList.add("enabled")
+            undoButton.disabled = false
         if (redoStack.length === 0){
             const redoButton = document.getElementById("redoBtn")
             if (redoButton)
-                redoButton.classList.remove("enabled")
+                redoButton.disabled = true
         }
     }
     static clearStacks(){
@@ -41,10 +41,10 @@ class Command{
         redoStack.length = 0
         const redoButton = document.getElementById("redoBtn")
         if (redoButton)
-            redoButton.classList.remove("enabled")
+            redoButton.disabled = true
         const undoButton = document.getElementById("undoBtn")
         if (undoButton)
-            undoButton.classList.remove("enabled")
+            undoButton.disabled = true
     }
 
     execute(){
@@ -54,11 +54,14 @@ class Command{
         if (undoStack.length === maxUndoSize)
             undoStack.shift()
         undoStack.push(this)
-        //New action clears redo stack
-        redoStack.length = 0
         const undoButton = document.getElementById("undoBtn")
         if (undoButton)
-            undoButton.classList.add("enabled")
+            undoButton.disabled = false
+        //New action clears redo stack
+        redoStack.length = 0
+        const redoButton = document.getElementById("redoBtn")
+        if (redoButton)
+            redoButton.disabled = true
     }
     action(){
         throw new Error("Action must be defined by child class")
@@ -67,3 +70,21 @@ class Command{
         throw new Error("Reverse action must be defined by child class")
     }
 }
+
+//Clear stacks, disable buttons
+Command.clearStacks()
+//Add events for Ctrl commands
+document.addEventListener('keydown', function(event) {
+    try{
+        if (event.ctrlKey && event.key === 'z') {
+            event.preventDefault(); 
+            Command.undo();
+        }
+        if (event.ctrlKey && event.key === 'y') {
+            event.preventDefault(); 
+            Command.redo();
+        }
+    }catch(error){
+        console.log(error)
+    }
+});

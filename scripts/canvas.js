@@ -1151,6 +1151,9 @@ class DiagramUI {
 
 // ============ Application Initialization ============
 document.addEventListener("DOMContentLoaded", () => {
+  // Update theme button icon on load
+  ThemeManager.updateThemeButtonIcon()
+
   const canvasElement = document.getElementById("diagramCanvas")
 
   if (canvasElement) {
@@ -1162,9 +1165,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!authorInput.value) {
       authorInput.value = "Student"
     }
-
-    // Update theme button icon on load
-    ThemeManager.updateThemeButtonIcon()
     diagramCanvas.render()
   }
+
+  const undoButton = document.getElementById("undoBtn")
+  if (undoButton)
+      undoButton.addEventListener("click", () => Command.undo())
+  const redoButton = document.getElementById("redoBtn")
+  if (redoButton)
+      redoButton.addEventListener("click", () => Command.redo())
 })

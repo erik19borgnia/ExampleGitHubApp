@@ -143,6 +143,9 @@ html, body {
 .btn-undo:active{
   background-image: url('../img/undo-click.png');
 }
+.btn-undo:disabled{
+  background-image: url('../img/undo-disabled.png');
+}
 .btn-redo {
   background-image: url('../img/redo.png');
   background-repeat: no-repeat;
@@ -151,6 +154,9 @@ html, body {
 }
 .btn-redo:active{
   background-image: url('../img/redo-click.png');
+}
+.btn-redo:disabled{
+  background-image: url('../img/redo-disabled.png');
 }
 
 .btn-drive {
