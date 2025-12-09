@@ -17,15 +17,17 @@
         <h1 class="app-title">Flux Diagram Editor</h1>
       </div>
       <div class="header-right">
+        <button id="undoBtn" class="btn btn-secondary btn-undo" title="Undo"></button>
+        <button id="redoBtn" class="btn btn-secondary btn-redo" title="Redo"></button>
         <button id="saveBtn" class="btn btn-primary" title="Save diagram">Save</button>
         <button id="loadBtn" class="btn btn-secondary" title="Load diagram">Load</button>
         <button id="exportBtn" class="btn btn-secondary" title="Export as JSON">Export</button>
         <button id="importBtn" class="btn btn-secondary" title="Import from JSON">Import</button>
         <!--Google Drive icon: //ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png-->
-        <button id="googleAuthorizeBtn" class="btn btn-secondary btn-drive hidden">Login</button>
-        <button id="exportDriveBtn" class="btn btn-secondary btn-drive hidden" title="Export to Drive">Export</button>
-        <button id="importDriveBtn" class="btn btn-secondary btn-drive hidden" title="Import from Drive">Import</button>
-        <button id="googleLogoutBtn" class="btn btn-secondary btn-drive hidden">Logout</button>
+        <button id="googleAuthorizeBtn" class="btn btn-secondary btn-drive hidden" title="Login to Drive">Login</button>
+        <button id="exportDriveBtn" class="btn btn-secondary btn-drive hidden" style="background-image: url('img/drive.png')" title="Export to Drive">Export</button>
+        <button id="importDriveBtn" class="btn btn-secondary btn-drive hidden" style="background-image: url('img/drive.png')" title="Import from Drive">Import</button>
+        <button id="googleLogoutBtn" class="btn btn-secondary btn-drive hidden" style="background-image: url('img/drive.png')" title="Logout from Drive">Logout</button>
         <!-- Add theme toggle button -->
         <button id="themeToggle" class="theme-toggle" title="Toggle dark/light theme">🌙</button>
       </div>
@@ -106,6 +108,18 @@
     </div>
   </div>
 
+  <!-- Clear Canvas Dialog -->
+  <div id="clearDiagramDialog" class="modal hidden">
+    <div class="modal-content">
+      <h2>Clear Diagram?</h2>
+      This action can't be undone!
+      <div class="modal-buttons">
+        <button id="confirmClearDiagramBtn" class="btn btn-primary btn-danger">YES, CLEAR</button>
+        <button id="cancelClearDiagramBtn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Hidden inputs for file operations -->
   <input type="file" id="fileInput" accept=".json" style="display: none;">
 
@@ -132,6 +146,7 @@
     </div>
   </div>
 
+  <script src="scripts/command.js"></script>
   <script src="scripts/themeManager.js"></script>
   <script src="scripts/nodeTypeManager.js"></script>
   <script src="scripts/storageManager.js"></script>

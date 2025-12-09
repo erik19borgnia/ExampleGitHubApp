@@ -1,8 +1,10 @@
-class ThemeManager {
+const THEME_KEY = "theme"
+
+const ThemeManager = {
   constructor() {
-    this.currentTheme = localStorage.getItem("fluxTheme") || "dark"
+    this.currentTheme = localStorage.getItem(THEME_KEY) || "dark"
     this.applyTheme()
-  }
+  },
 
   applyTheme() {
     const html = document.documentElement
@@ -11,14 +13,14 @@ class ThemeManager {
     } else {
       html.classList.remove("light-theme")
     }
-  }
+  },
 
   toggle() {
     this.currentTheme = this.currentTheme === "dark" ? "light" : "dark"
-    localStorage.setItem("fluxTheme", this.currentTheme)
+    localStorage.setItem(THEME_KEY, this.currentTheme)
     this.applyTheme()
     this.updateThemeButtonIcon()
-  }
+  },
 
   updateThemeButtonIcon() {
     const btn = document.getElementById("themeToggle")

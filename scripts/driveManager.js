@@ -88,7 +88,7 @@ async function loggedIn(){
     document.getElementById("exportDriveBtn").classList.remove("hidden")
     document.getElementById("importDriveBtn").classList.remove("hidden")
     document.getElementById('googleLogoutBtn').classList.remove("hidden")
-    document.getElementById('googleAuthorizeBtn').innerText = 'Refresh';
+    document.getElementById('googleAuthorizeBtn').classList.add("hidden")
     await listFiles();
 }
 
@@ -102,7 +102,7 @@ function handleSignoutClick() {
         gapi.client.setToken('');
         localStorage.removeItem('googleCredentials')
         //document.getElementById('content').innerText = '';
-        document.getElementById('googleAuthorizeBtn').innerText = 'Login';
+        document.getElementById('googleAuthorizeBtn').classList.remove("hidden")
         document.getElementById('googleLogoutBtn').classList.add("hidden")
         document.getElementById("exportDriveBtn").classList.add("hidden")
         document.getElementById("importDriveBtn").classList.add("hidden")
@@ -137,9 +137,21 @@ async function listFiles() {
 }
 
 function exportToDrive(){
-    console.log("Export!")
+    if (gapi.client.getToken() !== null)
+    {
+        
+        console.log("Exported as ")
+    }else{
+        console.error("Not logged in!")
+    }
 }
 
 function importFromDrive(){
-    console.log("Import!")
+    if (gapi.client.getToken() !== null)
+    {
+        
+        console.log("Import!")
+    }else{
+        console.error("Not logged in!")
+    }
 }

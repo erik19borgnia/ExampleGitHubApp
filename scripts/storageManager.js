@@ -1,4 +1,4 @@
-const STORAGE_KEY = "fluxDiagrams"
+const STORAGE_KEY = "storedDiagrams"
 // ============ Storage Management ============
 const DiagramStorage = {
   getAllDiagrams() {

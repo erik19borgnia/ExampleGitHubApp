@@ -3,6 +3,7 @@ const NODE_WIDTH = 120
 const NODE_HEIGHT = 60
 const PORT_RADIUS = 6
 
+
 // ============ Canvas Management ============
 class DiagramCanvas {
   constructor(canvasElement, nodeTypeManager) {
@@ -761,10 +762,9 @@ class DiagramCanvas {
 
 // ============ UI Management ============
 class DiagramUI {
-  constructor(canvas, nodeTypeManager, themeManager) {
+  constructor(canvas, nodeTypeManager) {
     this.canvas = canvas
     this.nodeTypeManager = nodeTypeManager
-    this.themeManager = themeManager
     this.currentDiagramId = null
     this.pendingNodeImage = null
     this.setupEventListeners()
@@ -784,7 +784,7 @@ class DiagramUI {
     }
 
     document.getElementById("themeToggle").addEventListener("click", () => {
-      this.themeManager.toggle()
+      ThemeManager.toggle()
       this.canvas.render()
     })
 
@@ -798,7 +798,11 @@ class DiagramUI {
     document.getElementById("loadBtn").addEventListener("click", () => this.showLoadDialog())
     document.getElementById("exportBtn").addEventListener("click", () => this.exportDiagram())
     document.getElementById("importBtn").addEventListener("click", () => this.triggerImport())
-    document.getElementById("clearBtn").addEventListener("click", () => this.clearCanvas())
+    document.getElementById("clearBtn").addEventListener("click", () => this.showClearCanvasDialog())
+
+    // Save dialog
+    document.getElementById("confirmClearDiagramBtn").addEventListener("click", () => this.confirmClearCanvas())
+    document.getElementById("cancelClearDiagramBtn").addEventListener("click", () => this.closeClearCanvasDialog())
 
     // Node editor
     document.getElementById("closeEditorBtn").addEventListener("click", () => this.closeNodeEditor())
@@ -1061,13 +1065,19 @@ class DiagramUI {
     }
   }
 
-  clearCanvas() {
-    if (confirm("Are you sure you want to clear the canvas?")) {
-      this.canvas.clear()
-      this.currentDiagramId = null
-      document.getElementById("diagramName").value = ""
-      this.updateMetadataDisplay()
-    }
+  showClearCanvasDialog() {
+    document.getElementById("clearDiagramDialog").classList.remove("hidden")
+  }
+  closeClearCanvasDialog() {
+    document.getElementById("clearDiagramDialog").classList.add("hidden")
+  }
+  confirmClearCanvas() {
+    this.canvas.clear()
+    this.currentDiagramId = null
+    document.getElementById("diagramName").value = ""
+    this.updateMetadataDisplay()
+    this.closeClearCanvasDialog()
+    Command.clearStacks()
   }
 
   deleteSelectedNode() {
@@ -1144,10 +1154,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvasElement = document.getElementById("diagramCanvas")
 
   if (canvasElement) {
-    const themeManager = new ThemeManager()
     const nodeTypeManager = new NodeTypeManager(canvasElement)
     const diagramCanvas = new DiagramCanvas(canvasElement, nodeTypeManager)
-    const diagramUI = new DiagramUI(diagramCanvas, nodeTypeManager, themeManager)
+    const diagramUI = new DiagramUI(diagramCanvas, nodeTypeManager)
 
     const authorInput = document.getElementById("authorInput")
     if (!authorInput.value) {
@@ -1155,7 +1164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Update theme button icon on load
-    themeManager.updateThemeButtonIcon()
+    ThemeManager.updateThemeButtonIcon()
     diagramCanvas.render()
   }
 })
