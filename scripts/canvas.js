@@ -28,8 +28,6 @@ class DeleteNodeCommand extends Command{
     this.edges = this.canvas.state.edges.filter((e) => e.from.nodeId == nodeID || e.to.nodeId == nodeID)
   }
   action(){
-    console.log(this.node)
-    console.log(this.edges)
     this.canvas.state.nodes = this.canvas.state.nodes.filter((n) => n.id !== this.node.id)
     if (this.edges.length>0)
       this.canvas.state.edges = this.canvas.state.edges.filter((e) => e.from.nodeId !== this.node.id && e.to.nodeId !== this.node.id)
@@ -37,11 +35,26 @@ class DeleteNodeCommand extends Command{
     this.canvas.render()
   }
   reverseAction(){
-    console.log(this.node)
-    console.log(this.edges)
     this.canvas.state.nodes.push(this.node)
     this.edges.forEach((edge) => {this.canvas.state.edges.push(edge)})      
     this.canvas.state.selectedNodeId = this.node.id
+    this.canvas.render()
+  }
+}
+class NewNodeCommand extends Command{
+  constructor(canvas,node){
+    super()
+    this.canvas = canvas
+    this.node = node
+  }
+  action(){
+    this.canvas.state.nodes.push(this.node)
+    this.canvas.state.selectedNodeId = this.node.id
+    this.canvas.render()
+  }
+  reverseAction(){
+    this.canvas.state.nodes = this.canvas.state.nodes.filter((n) => n.id !== this.node.id)
+    this.canvas.state.selectedNodeId = null
     this.canvas.render()
   }
 }
@@ -602,7 +615,7 @@ class DiagramCanvas {
     const typeConfig = this.nodeTypeManager.getType(type)
     if (!typeConfig) return
 
-    this.state.nodes.push({
+    new NewNodeCommand(this,{
       id,
       type,
       label,
@@ -610,9 +623,7 @@ class DiagramCanvas {
       //position: { x: this.canvas.width / 2, y: this.canvas.height / 2 },
       width: NODE_WIDTH,
       height: NODE_HEIGHT,
-    })
-    this.state.selectedNodeId = id
-    this.render()
+    }).execute()
   }
 
   deleteNode(id) {
@@ -823,6 +834,10 @@ class DiagramUI {
     document.getElementById("exportBtn").addEventListener("click", () => this.exportDiagram())
     document.getElementById("importBtn").addEventListener("click", () => this.triggerImport())
     document.getElementById("clearDiagramBtn").addEventListener("click", () => this.showClearCanvasDialog())
+
+    //Undo-Redo buttons
+    document.getElementById("undoBtn").addEventListener("click", () => Command.undo())
+    document.getElementById("redoBtn").addEventListener("click", () => Command.redo())
 
     // Save dialog
     document.getElementById("confirmClearDiagramBtn").addEventListener("click", () => this.confirmClearCanvas())
@@ -1141,7 +1156,7 @@ class DiagramUI {
   updateMetadataDisplay() {
     const now = new Date()
     
-    document.getElementById("createdTime").textContent = "Today "+now.toLocaleTimeString([],{ hour12: false })
+    document.getElementById("createdTime").textContent = "Today, "+now.toLocaleTimeString([],{ hour12: false })
     document.getElementById("modifiedTime").textContent = now.toLocaleString([],{ hour12: false })
   }
 }
@@ -1164,11 +1179,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     diagramCanvas.render()
   }
-
-  const undoButton = document.getElementById("undoBtn")
-  if (undoButton)
-      undoButton.addEventListener("click", () => Command.undo())
-  const redoButton = document.getElementById("redoBtn")
-  if (redoButton)
-      redoButton.addEventListener("click", () => Command.redo())
 })

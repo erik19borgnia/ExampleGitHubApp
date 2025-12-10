@@ -73,17 +73,37 @@ class Command{
 //Clear stacks, disable buttons
 Command.clearStacks()
 //Add events for Ctrl commands
+var undoing = null
+var redoing = null
 document.addEventListener('keydown', function(event) {
     try{
         if (event.ctrlKey && event.key === 'z') {
-            event.preventDefault(); 
-            Command.undo();
+            if (!undoing){
+                event.preventDefault()
+                Command.undo()
+                undoing = setInterval(()=>{Command.undo()},200)
+            }
         }
-        if (event.ctrlKey && event.key === 'y') {
-            event.preventDefault(); 
-            Command.redo();
+        else if (event.ctrlKey && event.key === 'y') {
+            if (!redoing){
+                event.preventDefault()
+                Command.redo()
+                redoing = setInterval(()=>{Command.redo()},200)
+            }
         }
     }catch(error){
         console.log(error)
+    }
+});
+document.addEventListener('keyup', function(event) {
+    if (undoing && (!event.ctrlKey || event.key === 'z'))
+    {
+        clearInterval(undoing)
+        undoing = null
+    }
+    if (redoing && (!event.ctrlKey || event.key === 'y'))
+    {
+        clearInterval(redoing)
+        redoing = null
     }
 });
