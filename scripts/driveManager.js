@@ -13,10 +13,9 @@ function maybeEnableButtons() {
     //console.log("GIS "+gisInited)
     if (gapiInited && gisInited) {
         document.getElementById("googleAuthorizeBtn").classList.remove("hidden")
+        document.getElementById("googleAuthorizeBtn").disabled = false
         document.getElementById("googleAuthorizeBtn").addEventListener("click", () => handleAuthClick())
         document.getElementById("googleLogoutBtn").addEventListener("click", () => handleSignoutClick())
-        document.getElementById("exportDriveBtn").addEventListener("click", () => exportToDrive())
-        document.getElementById("importDriveBtn").addEventListener("click", () => importFromDrive())
     }
 }
 
@@ -84,12 +83,15 @@ function handleAuthClick() {
     }
 }
 
-async function loggedIn(){
+function loggedIn(){
     document.getElementById("exportDriveBtn").classList.remove("hidden")
+    document.getElementById("exportDriveBtn").disabled = false
     document.getElementById("importDriveBtn").classList.remove("hidden")
+    document.getElementById("importDriveBtn").disabled = false
     document.getElementById('googleLogoutBtn').classList.remove("hidden")
+    document.getElementById("googleLogoutBtn").disabled = false
     document.getElementById('googleAuthorizeBtn').classList.add("hidden")
-    await listFiles();
+    document.getElementById("googleAuthorizeBtn").disabled = true
 }
 
 /**
@@ -103,14 +105,18 @@ function handleSignoutClick() {
         localStorage.removeItem('googleCredentials')
         //document.getElementById('content').innerText = '';
         document.getElementById('googleAuthorizeBtn').classList.remove("hidden")
+        document.getElementById("googleAuthorizeBtn").disabled = false
         document.getElementById('googleLogoutBtn').classList.add("hidden")
+        document.getElementById("googleLogoutBtn").disabled = true
         document.getElementById("exportDriveBtn").classList.add("hidden")
+        document.getElementById("exportDriveBtn").disabled = true
         document.getElementById("importDriveBtn").classList.add("hidden")
+        document.getElementById("importDriveBtn").disabled = true
     }
 }
 
 /**
- * Print metadata for first 10 files.
+ * Print metadata for loadable files
  * TO DO
  */
 async function listFiles() {
@@ -134,9 +140,10 @@ async function listFiles() {
         (str, file) => `${str}${file.name} (${file.id})\n`,
         'Files:\n');
     //document.getElementById('content').innerText = output;
+    return output
 }
 
-function exportToDrive(){
+function exportDiagram(diagram){
     if (gapi.client.getToken() !== null)
     {
         
@@ -146,7 +153,7 @@ function exportToDrive(){
     }
 }
 
-function importFromDrive(){
+function importDiagram(file){
     if (gapi.client.getToken() !== null)
     {
         
