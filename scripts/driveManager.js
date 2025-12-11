@@ -145,17 +145,20 @@ async function listFiles() {
     return output
 }
 
-function exportDiagram(diagram){
+async function exportDiagramToDrive(diagram){
     if (gapi.client.getToken() !== null)
     {
-        
-        console.log("Exported as ")
+        const name = Date.now().toLocaleString([],{ hour12: false })+".txt"
+        response = await gapi.client.drive.files.create({
+            "name": name,
+        }).execute();
+        console.log("Exported. Response: "+response)
     }else{
         console.error("Not logged in!")
     }
 }
 
-function importDiagram(file){
+function importDiagramFromDrive(file){
     if (gapi.client.getToken() !== null)
     {
         
@@ -164,3 +167,53 @@ function importDiagram(file){
         console.error("Not logged in!")
     }
 }
+
+
+/*
+//CREATE FOLDER
+var parentId = '';//some parentId of a folder under which to create the new folder
+var fileMetadata = {
+  'name' : 'New Folder',
+  'mimeType' : 'application/vnd.google-apps.folder',
+  'parents': [parentId]
+};
+gapi.client.drive.files.create({
+  resource: fileMetadata,
+}).then(function(response) {
+  switch(response.status){
+    case 200:
+      var file = response.result;
+      console.log('Created Folder Id: ', file.id);
+      break;
+    default:
+      console.log('Error creating the folder, '+response);
+      break;
+    }
+});
+
+//UPLOAD FILE
+var fileContent = "sample text"; // fileContent can be text, or an Uint8Array, etc.
+var file = new Blob([fileContent], {type: "text/plain"});
+var metadata = {
+    "name": "yourFilename",
+    "mimeType": "text/plain",
+    "parents": ["folder id or 'root'"], // Google Drive folder id
+};
+
+var accessToken = gapi.auth.getToken().access_token;
+var form = new FormData();
+form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+form.append('file', file);
+
+fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true", {
+    method: 'POST',
+    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+    body: form,
+}).then((res) => {
+    return res.json();
+}).then(function(val) {
+    console.log(val);
+});
+
+
+*/

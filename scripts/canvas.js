@@ -1079,6 +1079,11 @@ class DiagramUI {
     URL.revokeObjectURL(url)
   }
 
+  exportToDrive(){
+    //TESTING
+    exportDiagramToDrive(null)
+  }
+
   triggerImport() {
     document.getElementById("fileInput").click()
   }
