@@ -142,6 +142,7 @@ async function listFiles() {
         (str, file) => `${str}${file.name} (${file.id})\n`,
         'Files:\n');
     //document.getElementById('content').innerText = output;
+    console.log(output)
     return output
 }
 
@@ -151,6 +152,7 @@ async function exportDiagramToDrive(diagram){
         const name = Date.now().toLocaleString([],{ hour12: false })+".txt"
         response = await gapi.client.drive.files.create({
             "name": name,
+            "mimeType" : "application/vnd.google-apps.folder",
         }).execute();
         console.log("Exported. Response: "+response)
     }else{
@@ -215,5 +217,42 @@ fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&sup
     console.log(val);
 });
 
+//ANOTHER WAY
+var createFileWithJSONContent = function(name,data,callback) {
+  const boundary = '-------314159265358979323846';
+  const delimiter = "\r\n--" + boundary + "\r\n";
+  const close_delim = "\r\n--" + boundary + "--";
+
+  const contentType = 'application/json';
+
+  var metadata = {
+      'name': name,
+      'mimeType': contentType
+    };
+
+    var multipartRequestBody =
+        delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(metadata) +
+        delimiter +
+        'Content-Type: ' + contentType + '\r\n\r\n' +
+        data +
+        close_delim;
+
+    var request = gapi.client.request({
+        'path': '/upload/drive/v3/files',
+        'method': 'POST',
+        'params': {'uploadType': 'multipart'},
+        'headers': {
+          'Content-Type': 'multipart/related; boundary="' + boundary + '"'
+        },
+        'body': multipartRequestBody});
+    if (!callback) {
+      callback = function(file) {
+        console.log(file)
+      };
+    }
+    request.execute(callback);
+}
 
 */
