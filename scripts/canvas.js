@@ -833,8 +833,8 @@ class DiagramUI {
     document.getElementById("loadBtn").addEventListener("click", () => this.showLoadDialog())
     document.getElementById("exportBtn").addEventListener("click", () => this.exportDiagram())
     document.getElementById("importBtn").addEventListener("click", () => this.triggerImport())
-    document.getElementById("exportDriveBtn").addEventListener("click", () => exportToDrive())
-    document.getElementById("importDriveBtn").addEventListener("click", () => importFromDrive())
+    document.getElementById("exportDriveBtn").addEventListener("click", () => this.exportToDrive())
+    document.getElementById("importDriveBtn").addEventListener("click", () => this.importFromDrive())
     document.getElementById("clearDiagramBtn").addEventListener("click", () => this.showClearCanvasDialog())
 
     //Undo-Redo buttons
