@@ -127,11 +127,13 @@ async function listFiles() {
         'fields': 'files(id, name)',
         });
     } catch (err) {
+        console.log(err.message)
         //document.getElementById('content').innerText = err.message;
         return;
     }
     const files = response.result.files;
     if (!files || files.length == 0) {
+        console.log('No files found.')
         //document.getElementById('content').innerText = 'No files found.';
         return;
     }
