@@ -126,7 +126,7 @@ async function listFiles() {
     try {
         response = await gapi.client.drive.files.list({
         'pageSize': 10,
-        'fields': 'files(id, name)',
+        //'fields': 'files(id, name)',
         });
     } catch (err) {
         console.log(err.message)
