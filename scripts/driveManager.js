@@ -3,6 +3,8 @@ const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
+const projectMimeType = "application/json"
+const googleUploadAPI = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true"
 let tokenClient;
 let gapiInited = false;
 let gisInited = false;
@@ -152,15 +154,28 @@ async function listFiles() {
 async function exportDiagramToDrive(diagram){
     if (gapi.client.getToken() !== null)
     {
-        const name = "WebSim Projects"
-        await gapi.client.drive.files.create({
-            "name": name,
-            "mimeType" : "application/vnd.google-apps.folder",
-        }).then(function(response){
-            console.log("Exported. Response: ")
-            console.log(response)
-            return response
-        })
+        const diagramData = JSON.stringify("DATOS DE PRUEBA")
+        const folderID = await getProjectsFolderID()
+        const file = new Blob([diagramData], {type: "text/plain"});
+        const diagramName = "testFile.wsd"
+        const metadata = {
+            "name": diagramName,
+            "mimeType": projectMimeType,
+            "parents": [folderID], // Google Drive folder id
+        };
+        const accessToken = gapi.auth.getToken().access_token;
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', file);
+        fetch(googleUploadAPI, {
+            method: 'POST',
+            headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+            body: form,
+        }).then((res) => {
+            return res.json();
+        }).then(function(val) {
+            console.log(val);
+        });
     }else{
         console.error("Not logged in!")
     }
@@ -176,6 +191,10 @@ function importDiagramFromDrive(file){
     }
 }
 
+/**
+ * Gets the ID of the Projects Folder. If it wasn't created, it creates it and returns the created folder ID.
+ * @returns String ID of the Projects folder
+ */
 async function getProjectsFolderID(){
     const list = await gapi.client.drive.files.list({
         "fields": "files(id, name, mimeType)",
@@ -209,33 +228,12 @@ async function getProjectsFolderID(){
 
 
 /*
-//CREATE FOLDER
-var parentId = '';//some parentId of a folder under which to create the new folder
-var fileMetadata = {
-  'name' : 'New Folder',
-  'mimeType' : 'application/vnd.google-apps.folder',
-  'parents': [parentId]
-};
-gapi.client.drive.files.create({
-  resource: fileMetadata,
-}).then(function(response) {
-  switch(response.status){
-    case 200:
-      var file = response.result;
-      console.log('Created Folder Id: ', file.id);
-      break;
-    default:
-      console.log('Error creating the folder, '+response);
-      break;
-    }
-});
-
 //UPLOAD FILE
 var fileContent = "sample text"; // fileContent can be text, or an Uint8Array, etc.
 var file = new Blob([fileContent], {type: "text/plain"});
 var metadata = {
     "name": "yourFilename",
-    "mimeType": "text/plain",
+    "mimeType": "application/json",
     "parents": ["folder id or 'root'"], // Google Drive folder id
 };
 
