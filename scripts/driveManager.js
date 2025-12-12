@@ -1,6 +1,8 @@
 const CLIENT_ID = '253006367900-afh5cqbmqhuvse3n6grt0hch5tahinu7.apps.googleusercontent.com';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const projectsFolderName = "WebSim Projects"
+const folderMimeType = "application/vnd.google-apps.folder"
 let tokenClient;
 let gapiInited = false;
 let gisInited = false;
@@ -155,7 +157,8 @@ async function exportDiagramToDrive(diagram){
             "name": name,
             "mimeType" : "application/vnd.google-apps.folder",
         }).execute();
-        console.log("Exported. Response: "+response)
+        console.log("Exported. Response: ")
+        console.log(response)
         return response
     }else{
         console.error("Not logged in!")
@@ -173,7 +176,11 @@ function importDiagramFromDrive(file){
 }
 
 async function verifyProjectsFolder(){
-
+    //Create the projects folder
+    response = await gapi.client.drive.files.create({
+        "name": projectsFolderName,
+        "mimeType" : folderMimeType,
+    }).execute();
 
 
 }
