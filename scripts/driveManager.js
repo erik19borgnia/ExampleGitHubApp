@@ -184,6 +184,11 @@ async function exportDiagramToDrive(diagram){
 function importDiagramFromDrive(file){
     if (gapi.client.getToken() !== null)
     {
+        /*
+        file = await gapi.client.drive.files.get({
+            "fileId":fileId,
+            alt: "media",}) 
+        */
         
         console.log("Import!")
     }else{
@@ -201,11 +206,7 @@ async function getProjectsFolderID(){
         });
     let i = 0
     const files = list.result.files;
-    console.log("Fin list")
-    console.log(files)
     while (i<files.length && !(files[i].mimeType===folderMimeType && files[i].name===projectsFolderName)){
-        console.log(files[i].mimeType)
-        console.log(files[i].name)
         i++
     }
     let folderID;
@@ -218,8 +219,6 @@ async function getProjectsFolderID(){
             "name": projectsFolderName,
             "mimeType" : folderMimeType,
         }).then(function(response){
-            console.log("Created projects folder. Response: ")
-            console.log(response)
             folderID = response.result.id
         })
     }
