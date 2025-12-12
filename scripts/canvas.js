@@ -1080,8 +1080,20 @@ class DiagramUI {
   }
 
   exportToDrive(){
-    //TESTING
-    exportDiagramToDrive(null)
+    const { nodes, edges } = this.canvas.getDiagramState()
+    const name = document.getElementById("diagramName").value || "diagram"
+    const author = document.getElementById("authorInput").value || "Student"
+
+    const diagramData = {
+      id: `export-${Date.now()}`,
+      name,
+      author,
+      nodes,
+      edges,
+      createdAt: Date.now(),
+      modifiedAt: Date.now(),
+    }
+    exportDiagramToDrive(diagramData)
   }
 
   triggerImport() {

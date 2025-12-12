@@ -154,10 +154,10 @@ async function listFiles() {
 async function exportDiagramToDrive(diagram){
     if (gapi.client.getToken() !== null)
     {
-        const diagramData = JSON.stringify("DATOS DE PRUEBA")
+        const diagramData = JSON.stringify(diagram)
         const folderID = await getProjectsFolderID()
         const file = new Blob([diagramData], {type: "text/plain"});
-        const diagramName = "testFile.wsd"
+        const diagramName = diagram.name+".wsd"
         const metadata = {
             "name": diagramName,
             "mimeType": projectMimeType,
