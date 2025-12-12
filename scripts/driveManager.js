@@ -177,10 +177,11 @@ function importDiagramFromDrive(file){
 }
 
 async function getProjectsFolderID(){
-    files = await gapi.client.drive.files.list({
+    const files = await gapi.client.drive.files.list({
         "fields": "files(id, name, mimeType)",
         });
     let i = 0
+    console.log("Fin ")
     while (i<files.length && !(files[i].mimeType===folderMimeType && files[i].name===projectsFolderName)){
         console.log(files[i].mimeType)
         console.log(files[i].name)
