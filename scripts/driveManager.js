@@ -132,6 +132,7 @@ async function listFiles() {
         return;
     }
     const files = response.result.files;
+    console.log(files)
     if (!files || files.length == 0) {
         console.log('No files found.')
         //document.getElementById('content').innerText = 'No files found.';
@@ -149,12 +150,13 @@ async function listFiles() {
 async function exportDiagramToDrive(diagram){
     if (gapi.client.getToken() !== null)
     {
-        const name = Date.now().toLocaleString([],{ hour12: false })+".txt"
+        const name = "WebSim Projects"
         response = await gapi.client.drive.files.create({
             "name": name,
             "mimeType" : "application/vnd.google-apps.folder",
         }).execute();
         console.log("Exported. Response: "+response)
+        return response
     }else{
         console.error("Not logged in!")
     }
@@ -168,6 +170,12 @@ function importDiagramFromDrive(file){
     }else{
         console.error("Not logged in!")
     }
+}
+
+async function verifyProjectsFolder(){
+
+
+
 }
 
 
