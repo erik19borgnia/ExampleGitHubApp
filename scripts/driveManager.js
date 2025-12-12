@@ -126,7 +126,7 @@ async function listFiles() {
     try {
         response = await gapi.client.drive.files.list({
         'pageSize': 10,
-        //'fields': 'files(id, name)',
+        "fields": "files(id, name, mimeType)",
         });
     } catch (err) {
         console.log(err.message)
@@ -177,6 +177,10 @@ function importDiagramFromDrive(file){
 }
 
 async function verifyProjectsFolder(){
+    response = await gapi.client.drive.files.list({
+        "pageSize": 100,
+        "fields": "files(id, name, mimeType)",
+        });
     //Create the projects folder
     response = await gapi.client.drive.files.create({
         "name": projectsFolderName,
