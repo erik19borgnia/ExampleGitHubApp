@@ -182,6 +182,8 @@ async function getProjectsFolderID(){
         });
     let i = 0
     while (i<files.length && !(files[i].mimeType===folderMimeType && files[i].name===projectsFolderName)){
+        console.log(files[i].mimeType)
+        console.log(files[i].name)
         i++
     }
     let folderID;
