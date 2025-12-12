@@ -176,18 +176,30 @@ function importDiagramFromDrive(file){
     }
 }
 
-async function verifyProjectsFolder(){
-    response = await gapi.client.drive.files.list({
-        "pageSize": 100,
+async function getProjectsFolderID(){
+    files = await gapi.client.drive.files.list({
         "fields": "files(id, name, mimeType)",
         });
-    //Create the projects folder
-    response = await gapi.client.drive.files.create({
-        "name": projectsFolderName,
-        "mimeType" : folderMimeType,
-    }).execute();
-
-
+    let i = 0
+    while (i<files.length && !(files[i].mimeType===folderMimeType && files[i].name===projectsFolderName)){
+        i++
+    }
+    let folderID;
+    if (i<files.length){
+        folderID = files[i].id
+    }
+    else{
+        //Create the projects folder
+        response = await gapi.client.drive.files.create({
+            "name": projectsFolderName,
+            "mimeType" : folderMimeType,
+        }).then(function(response){
+            console.log("Created projects folder. Response: ")
+            console.log(response)
+            folderID = response.result.id
+        })
+    }
+    return folderID
 }
 
 
