@@ -153,12 +153,12 @@ async function exportDiagramToDrive(diagram){
     if (gapi.client.getToken() !== null)
     {
         const name = "WebSim Projects"
-        response = await gapi.client.drive.files.create({
+        await gapi.client.drive.files.create({
             "name": name,
             "mimeType" : "application/vnd.google-apps.folder",
         }).then(function(response){
             console.log("Exported. Response: ")
-            console.log(response.status)
+            console.log(response)
             return response
         })
     }else{
