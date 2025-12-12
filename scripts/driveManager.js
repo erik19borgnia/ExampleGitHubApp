@@ -156,10 +156,11 @@ async function exportDiagramToDrive(diagram){
         response = await gapi.client.drive.files.create({
             "name": name,
             "mimeType" : "application/vnd.google-apps.folder",
-        }).execute();
-        console.log("Exported. Response: ")
-        console.log(response)
-        return response
+        }).then(function(response){
+            console.log("Exported. Response: ")
+            console.log(response.status)
+            return response
+        })
     }else{
         console.error("Not logged in!")
     }
