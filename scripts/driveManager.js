@@ -46,7 +46,7 @@ function createPicker() {
     const picker = new google.picker.PickerBuilder()
         .addView(google.picker.ViewId.DOCS)
         .setOAuthToken(accessToken)
-        .setDeveloperKey(API_KEY)
+        .setKey(API_KEY)
         .setCallback(pickerCallback)
         .setAppId(CLIENT_ID)
         .build();
