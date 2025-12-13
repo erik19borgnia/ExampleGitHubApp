@@ -1,75 +1,200 @@
-const CLIENT_ID = '253006367900-afh5cqbmqhuvse3n6grt0hch5tahinu7.apps.googleusercontent.com'
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
-const SCOPES = 'https://www.googleapis.com/auth/drive.file'
+const CLIENT_ID = "253006367900-afh5cqbmqhuvse3n6grt0hch5tahinu7.apps.googleusercontent.com"
+const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+const SCOPES = "https://www.googleapis.com/auth/drive.file"
 const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
 const projectMimeType = "application/json"
 const googleUploadAPI = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true"
-let tokenClient
-let gapiInited = false
+const COOKIE_EXPIRATION_DAYS = 15
+const COOKIE_NAME = "googleCredentials"
+let clientInited = false
 let gisInited = false
 let pickerInited = false
+let tokenClient = null
+let refreshTokenTime = null
 
+//
+// LOADING FUNCTIONS
+//
 /**
- * Enables user interaction after all libraries are loaded.
+ * After api.js is loaded, load the APIs
  */
-function maybeEnableButtons() {
-    //console.log("GAPI "+gapiInited)
-    //console.log("GIS "+gisInited)
-    if (gapiInited && gisInited) {
+function gapiLoaded() {
+    gapi.load("client", initializeGapiClient)
+    gapi.load("picker", onPickerApiLoad)
+}
+/**
+ * Callback after the API client is loaded. Loads the
+ * discovery doc to initialize the API.
+ */
+async function initializeGapiClient() {
+    //Initialize GAPI client
+    await gapi.client.init({
+        discoveryDocs: [DISCOVERY_DOC],
+    })
+    clientInited = true
+    postInitialization()
+}
+/**
+ * Callback after the Picker API is loaded
+ */
+function onPickerApiLoad() {
+    pickerInited = true
+}
+/**
+ * Callback after Google Identity Services are loaded.
+ */
+function gisLoaded() {
+    tokenClient =  google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: "", // defined later
+    });
+    gisInited = true;
+    postInitialization();
+}
+
+//
+// AFTER LOADING FUNCTIONS
+//
+/**
+ * Enables user interaction after GAPI and GIS are loaded. If any of those failed, it's not possible to connect to Google API services
+ */
+function postInitialization() {
+    if (clientInited && gisInited) {
         document.getElementById("googleAuthorizeBtn").classList.remove("hidden")
         document.getElementById("googleAuthorizeBtn").disabled = false
-        document.getElementById("googleAuthorizeBtn").addEventListener("click", () => handleAuthClick())
-        document.getElementById("googleLogoutBtn").addEventListener("click", () => handleSignoutClick())
+        document.getElementById("googleAuthorizeBtn").addEventListener("click", () => handleAuthToken())
+        document.getElementById("googleLogoutBtn").addEventListener("click", () => handleSignout())
+        restoreCredentials()
+    }
+}
+/**
+ * Restores credentials saved, if there are.
+ * There are stored in a cookie, with a 
+ */
+function restoreCredentials(){
+    //Get stored credentials if they exist
+    let cookies = document.cookie.split(";")
+    let i = 0
+    while (i < cookies.length && !cookies[i].startsWith(COOKIE_NAME+"="))
+        i++
+    if (i < cookies.length) {
+      let storedCredentials = cookies[i].substring(cookies[i].indexOf("=")+1)
+      //In 2 lines just for clarity
+      storedCredentials = JSON.parse(storedCredentials)
+      gapi.client.setToken(storedCredentials[0])
+      refreshTokenTime = storedCredentials[1]
+      //Extend the lifetime of the cookie
+      updateCookie()
+      enableButtons()
+    }
+}
+/**
+ * Enable buttons for import and export
+ */
+function enableButtons(){
+    document.getElementById("googleAuthorizeBtn").classList.add("hidden")
+    document.getElementById("googleAuthorizeBtn").disabled = true
+    document.getElementById("exportDriveBtn").classList.remove("hidden")
+    document.getElementById("exportDriveBtn").disabled = false
+    document.getElementById("importDriveBtn").classList.remove("hidden")
+    document.getElementById("importDriveBtn").disabled = false
+    document.getElementById("googleLogoutBtn").classList.remove("hidden")
+    document.getElementById("googleLogoutBtn").disabled = false
+}
+/**
+ * Disable buttons for import and export
+ */
+function disableButtons(){
+    document.getElementById("googleAuthorizeBtn").classList.remove("hidden")
+    document.getElementById("googleAuthorizeBtn").disabled = false
+    document.getElementById("exportDriveBtn").classList.add("hidden")
+    document.getElementById("exportDriveBtn").disabled = true
+    document.getElementById("importDriveBtn").classList.add("hidden")
+    document.getElementById("importDriveBtn").disabled = true
+    document.getElementById("googleLogoutBtn").classList.add("hidden")
+    document.getElementById("googleLogoutBtn").disabled = true
+}
+/**
+ * Update the cookie to extends it's lifetime
+ */
+function updateCookie(){
+    const credentials = [gapi.client.getToken(), refreshTokenTime]
+    // Save credentials in cookie
+    const expireCookie = "expires="+ new Date(Date.now() + COOKIE_EXPIRATION_DAYS*24*60*60*1000).toUTCString() + ";"
+    document.cookie = COOKIE_NAME+"="+JSON.stringify(credentials)+"; " + expireCookie
+}
+
+//
+// AUTHORIZATION FUNCTIONS
+//
+/**
+ *  Sign in the user/Refreshes token, if needed
+ */
+async function handleAuthToken() {
+    tokenClient.callback = async (resp) => {
+        console.log(resp)
+        if (resp.error !== undefined) {
+            throw (resp);
+        }
+        refreshTokenTime = Date.now()+gapi.client.getToken().expires_in*1000
+        updateCookie()
+        enableButtons()
+    };
+
+    if (gapi.client.getToken() === null || Date.now()>refreshTokenTime) {
+        // Display account chooser, or refresh the token for an existing session.
+        await tokenClient.requestAccessToken({prompt: ""});
+        // This one is more convenient, almost always
+    }
+}
+/**
+ *  Sign out the user upon button click.
+ */
+function handleSignout() {
+    const token = gapi.client.getToken();
+    if (token !== null) {
+        google.accounts.oauth2.revoke(token.access_token);
+        gapi.client.setToken("");
+        // Delete credentials from cookie, by setting the expires to now
+        document.cookie = COOKIE_NAME +"=deletedData; expires="+new Date().toUTCString()+";"
+        disableButtons()
     }
 }
 
+//
+// BUTTON INTERACTIONS
+//
 /**
- * Callback after api.js is loaded.
+ * Create and render a Google Picker object for selecting from Drive.
  */
-function gapiLoaded() {
-    //console.log("Gapi 1")
-    gapi.load('client', initializeGapiClient);
-    //console.log("Gapi 2")
-    gapi.load('picker', onPickerApiLoad);
-}
-
-function onPickerApiLoad() {
-    pickerInited = true;
-}
-// Create and render a Google Picker object for selecting from Drive.
-function createPicker() {
-    let accessToken = null;
+async function createPicker() {
     const showPicker = () => {
         const picker = new google.picker.PickerBuilder()
             .addView(google.picker.ViewId.DOCS)
-            .setOAuthToken(accessToken)
+            .setSelectableMimeTypes(projectMimeType)
+            .setOAuthToken(gapi.client.getToken())
             .setCallback(pickerCallback)
             .setAppId(CLIENT_ID)
-            .build();
-        picker.setVisible(true);
+            .build()
+        picker.setVisible(true)
     }
-
+    /*
     // Request an access token.
     tokenClient.callback = async (response) => {
-    if (response.error !== undefined) {
-        throw (response);
-    }
-    accessToken = response.access_token;
-    showPicker();
-    };
+        if (response.error !== undefined) {
+            throw (response);
+        }
+        showPicker();
+    };*/
 
-    if (accessToken === null) {
-    // Prompt the user to select a Google Account and ask for consent to share their data
-    // when establishing a new session.
-    tokenClient.requestAccessToken({prompt: 'consent'});
-    } else {
-    // Skip display of account chooser and consent dialog for an existing session.
-    tokenClient.requestAccessToken({prompt: ''});
-    }
+    await handleAuthToken()
+    showPicker()
 }
 // A callback implementation.
 function pickerCallback(data) {
+    console.log(data)
     let url = ""
     if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
         const doc = data[google.picker.Response.DOCUMENTS][0]
@@ -79,102 +204,17 @@ function pickerCallback(data) {
     console.log(message)
 }
 
-/**
- * Callback after the API client is loaded. Loads the
- * discovery doc to initialize the API.
- */
-async function initializeGapiClient() {
-    //console.log("Gapi 3")
-    await gapi.client.init({
-        discoveryDocs: [DISCOVERY_DOC],
-    });
-    //console.log("Gapi 4")
-    gapiInited = true;
-    maybeEnableButtons();
-    let credentials = localStorage.getItem('googleCredentials');
-    if (credentials) {
-      credentials = JSON.parse(credentials);
-      gapi.client.setToken(credentials);
-      loggedIn();
-    }
-}
+
 
 /**
- * Callback after Google Identity Services are loaded.
- */
-function gisLoaded() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: '', // defined later
-    });
-    gisInited = true;
-    maybeEnableButtons();
-}
-
-/**
- *  Sign in the user upon button click.
- */
-function handleAuthClick() {
-    tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-        throw (resp);
-        }
-        localStorage.setItem('googleCredentials', JSON.stringify(resp));
-        loggedIn();
-    };
-
-    if (gapi.client.getToken() === null) {
-        // Prompt the user to select a Google Account and ask for consent to share their data
-        // when establishing a new session.
-        tokenClient.requestAccessToken({prompt: 'consent'});
-    } else {
-        // Skip display of account chooser and consent dialog for an existing session.
-        tokenClient.requestAccessToken({prompt: ''});
-    }
-}
-
-function loggedIn(){
-    document.getElementById("exportDriveBtn").classList.remove("hidden")
-    document.getElementById("exportDriveBtn").disabled = false
-    document.getElementById("importDriveBtn").classList.remove("hidden")
-    document.getElementById("importDriveBtn").disabled = false
-    document.getElementById('googleLogoutBtn').classList.remove("hidden")
-    document.getElementById("googleLogoutBtn").disabled = false
-    document.getElementById('googleAuthorizeBtn').classList.add("hidden")
-    document.getElementById("googleAuthorizeBtn").disabled = true
-}
-
-/**
- *  Sign out the user upon button click.
- */
-function handleSignoutClick() {
-    const token = gapi.client.getToken();
-    if (token !== null) {
-        google.accounts.oauth2.revoke(token.access_token);
-        gapi.client.setToken('');
-        localStorage.removeItem('googleCredentials')
-        //document.getElementById('content').innerText = '';
-        document.getElementById('googleAuthorizeBtn').classList.remove("hidden")
-        document.getElementById("googleAuthorizeBtn").disabled = false
-        document.getElementById('googleLogoutBtn').classList.add("hidden")
-        document.getElementById("googleLogoutBtn").disabled = true
-        document.getElementById("exportDriveBtn").classList.add("hidden")
-        document.getElementById("exportDriveBtn").disabled = true
-        document.getElementById("importDriveBtn").classList.add("hidden")
-        document.getElementById("importDriveBtn").disabled = true
-    }
-}
-
-/**
- * Print metadata for loadable files
- * TO DO
+ * Fallback function if Google Picker isn't enabled
+ * It lists only the files from the Drive that the App has rights to use
  */
 async function listFiles() {
     let response;
     try {
         response = await gapi.client.drive.files.list({
-        'pageSize': 10,
+        "pageSize": "10",
         "fields": "files(id, name, mimeType)",
         });
     } catch (err) {
@@ -185,14 +225,14 @@ async function listFiles() {
     const files = response.result.files;
     console.log(files)
     if (!files || files.length == 0) {
-        console.log('No files found.')
+        console.log("No files found.")
         //document.getElementById('content').innerText = 'No files found.';
         return;
     }
     // Flatten to string to display
     const output = files.reduce(
         (str, file) => `${str}${file.name} (${file.id})\n`,
-        'Files:\n');
+        "Files:\n");
     //document.getElementById('content').innerText = output;
     console.log(output)
     return output
@@ -212,11 +252,11 @@ async function exportDiagramToDrive(diagram){
         };
         const accessToken = gapi.auth.getToken().access_token;
         const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', file);
+        form.append("metadata", new Blob([JSON.stringify(metadata)], { type: projectMimeType }));
+        form.append("file", file);
         fetch(googleUploadAPI, {
-            method: 'POST',
-            headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+            method: "POST",
+            headers: new Headers({ "Authorization": "Bearer " + accessToken }),
             body: form,
         }).then((res) => {
             return res.json();
@@ -231,10 +271,10 @@ async function exportDiagramToDrive(diagram){
 async function importDiagramFromDrive(fileId){
     if (gapi.client.getToken() !== null)
     {
-        
+        //TEST FILE
+        fileId = "1YHRxXRU3dVdMIsgTLbEtxiftehpVYJkQ"
         const file = await gapi.client.drive.files.get({
-        //    "fileId": fileId,
-            "fileId": "1YHRxXRU3dVdMIsgTLbEtxiftehpVYJkQ",
+            "fileId": fileId,
             "alt": "media",}) 
 
         if (file.status !== 200)
@@ -243,7 +283,7 @@ async function importDiagramFromDrive(fileId){
         return JSON.parse(file.body)
         
     }else{
-        console.error("Not logged in!")
+        throw Error("User not logged in!")
     }
 }
 
