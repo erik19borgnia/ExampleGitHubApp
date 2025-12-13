@@ -1,13 +1,15 @@
-const CLIENT_ID = '253006367900-afh5cqbmqhuvse3n6grt0hch5tahinu7.apps.googleusercontent.com';
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const API_KEY = "AIzaSyD0J6RzL4kQHee5EOLAjNZROXj6wIeNCqs"
+const CLIENT_ID = '253006367900-afh5cqbmqhuvse3n6grt0hch5tahinu7.apps.googleusercontent.com'
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+const SCOPES = 'https://www.googleapis.com/auth/drive.file'
 const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
 const projectMimeType = "application/json"
 const googleUploadAPI = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true"
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
+let tokenClient
+let gapiInited = false
+let gisInited = false
+let pickerInited = false
 
 /**
  * Enables user interaction after all libraries are loaded.
@@ -30,6 +32,53 @@ function gapiLoaded() {
     //console.log("Gapi 1")
     gapi.load('client', initializeGapiClient);
     //console.log("Gapi 2")
+    gapi.load('picker', onPickerApiLoad);
+}
+
+function onPickerApiLoad() {
+    pickerInited = true;
+}
+// Create and render a Google Picker object for selecting from Drive.
+function createPicker() {
+    const showPicker = () => {
+    // Replace with your API key and App ID.
+    const picker = new google.picker.PickerBuilder()
+        .addView(google.picker.ViewId.DOCS)
+        .setOAuthToken(accessToken)
+        .setDeveloperKey(API_KEY)
+        .setCallback(pickerCallback)
+        .setAppId(CLIENT_ID)
+        .build();
+    picker.setVisible(true);
+    }
+
+    // Request an access token.
+    tokenClient.callback = async (response) => {
+    if (response.error !== undefined) {
+        throw (response);
+    }
+    accessToken = response.access_token;
+    showPicker();
+    };
+
+    if (accessToken === null) {
+    // Prompt the user to select a Google Account and ask for consent to share their data
+    // when establishing a new session.
+    tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+    // Skip display of account chooser and consent dialog for an existing session.
+    tokenClient.requestAccessToken({prompt: ''});
+    }
+}
+// A callback implementation.
+function pickerCallback(data) {
+    let url = ""
+    if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
+        const doc = data[google.picker.Response.DOCUMENTS][0]
+        url = doc[google.picker.Document.URL]
+    }
+    const message = `You picked: ${url}`
+    console.log(message)
 }
 
 /**
