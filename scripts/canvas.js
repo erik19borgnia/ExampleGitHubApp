@@ -1096,8 +1096,8 @@ class DiagramUI {
     exportDiagramToDrive(diagramData)
   }
 
-  importFromDrive(){
-    const diagram = importDiagramFromDrive("")
+  async importFromDrive(){
+    const diagram = await importDiagramFromDrive("")
     this.canvas.loadDiagram(diagram)
     alert("Diagram imported successfully!")
   }
