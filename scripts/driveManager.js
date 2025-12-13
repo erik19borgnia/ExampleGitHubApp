@@ -40,6 +40,7 @@ function onPickerApiLoad() {
 }
 // Create and render a Google Picker object for selecting from Drive.
 function createPicker() {
+    let accessToken = null;
     const showPicker = () => {
     // Replace with your API key and App ID.
     const picker = new google.picker.PickerBuilder()
