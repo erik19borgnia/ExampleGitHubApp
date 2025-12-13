@@ -1,4 +1,3 @@
-const API_KEY = "AIzaSyD0J6RzL4kQHee5EOLAjNZROXj6wIeNCqs"
 const CLIENT_ID = '253006367900-afh5cqbmqhuvse3n6grt0hch5tahinu7.apps.googleusercontent.com'
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
 const SCOPES = 'https://www.googleapis.com/auth/drive.file'
@@ -42,15 +41,13 @@ function onPickerApiLoad() {
 function createPicker() {
     let accessToken = null;
     const showPicker = () => {
-    // Replace with your API key and App ID.
-    const picker = new google.picker.PickerBuilder()
-        .addView(google.picker.ViewId.DOCS)
-        .setOAuthToken(accessToken)
-        .setKey(API_KEY)
-        .setCallback(pickerCallback)
-        .setAppId(CLIENT_ID)
-        .build();
-    picker.setVisible(true);
+        const picker = new google.picker.PickerBuilder()
+            .addView(google.picker.ViewId.DOCS)
+            .setOAuthToken(accessToken)
+            .setCallback(pickerCallback)
+            .setAppId(CLIENT_ID)
+            .build();
+        picker.setVisible(true);
     }
 
     // Request an access token.
