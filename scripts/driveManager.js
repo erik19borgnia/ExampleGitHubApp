@@ -181,10 +181,10 @@ async function exportDiagramToDrive(diagram){
     }
 }
 
-function importDiagramFromDrive(fileId){
+async function importDiagramFromDrive(fileId){
     if (gapi.client.getToken() !== null)
     {
-        /*
+        
         const file = await gapi.client.drive.files.get({
         //    "fileId": fileId,
             "fileId": "1YHRxXRU3dVdMIsgTLbEtxiftehpVYJkQ",
@@ -194,7 +194,7 @@ function importDiagramFromDrive(fileId){
             throw Error("File doesn't exist")
         console.log("Imported diagram ID "+fileId)
         return JSON.parse(file.body)
-        */
+        
     }else{
         console.error("Not logged in!")
     }
