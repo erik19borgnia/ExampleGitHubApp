@@ -1096,6 +1096,12 @@ class DiagramUI {
     exportDiagramToDrive(diagramData)
   }
 
+  importFromDrive(){
+    const diagram = importDiagramFromDrive("")
+    loadDiagram(diagram)
+    alert("Diagram imported successfully!")
+  }
+
   triggerImport() {
     document.getElementById("fileInput").click()
   }
