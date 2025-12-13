@@ -1098,7 +1098,7 @@ class DiagramUI {
 
   importFromDrive(){
     const diagram = importDiagramFromDrive("")
-    loadDiagram(diagram)
+    this.canvas.loadDiagram(diagram)
     alert("Diagram imported successfully!")
   }
 
