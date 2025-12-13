@@ -133,21 +133,25 @@ function updateCookie(){
  *  Sign in the user/Refreshes token, if needed
  */
 async function handleAuthToken() {
+    let finished = false
     tokenClient.callback = async (resp) => {
-        console.log(resp)
         if (resp.error !== undefined) {
             throw (resp);
         }
         refreshTokenTime = Date.now()+gapi.client.getToken().expires_in*1000
         updateCookie()
         enableButtons()
+        finished = true
     };
 
     if (gapi.client.getToken() === null || Date.now()>refreshTokenTime) {
         // Display account chooser, or refresh the token for an existing session.
-        await tokenClient.requestAccessToken({prompt: ""});
+        tokenClient.requestAccessToken({prompt: ""});
         // This one is more convenient, almost always
     }
+    console.log("Not finished?")
+    while (!finished){}
+    console.log("Finished!")
 }
 /**
  *  Sign out the user upon button click.
@@ -173,7 +177,7 @@ async function createPicker() {
     const showPicker = () => {
         const picker = new google.picker.PickerBuilder()
             .addView(google.picker.ViewId.DOCS)
-            .setSelectableMimeTypes(projectMimeType)
+            //.setSelectableMimeTypes(projectMimeType)
             .setOAuthToken(gapi.client.getToken())
             .setCallback(pickerCallback)
             .setAppId(CLIENT_ID)
