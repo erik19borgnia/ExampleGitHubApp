@@ -308,7 +308,7 @@ async function exportDiagramToDrive(diagram){
 }
 
 async function importDiagramFromDrive(fileId){
-    if (gapi.client.getToken() !== null)
+    if (gapi.client.getToken() === null)
         throw Error("User not logged in!")
     
     //TEST FILE
