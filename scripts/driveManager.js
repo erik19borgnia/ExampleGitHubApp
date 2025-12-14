@@ -233,7 +233,7 @@ async function filePicker() {
     if (gapi.client.getToken() === null)
         throw Error("User not logged in!")
     
-    showPicker().then(async (selectedID) => {
+    return showPicker().then(async (selectedID) => {
         console.log(selectedID)
         return await importDiagramFromDrive(selectedID)
     }).catch((error) => {
