@@ -178,24 +178,43 @@ function handleSignout() {
 /**
  * Create and render a Google Picker object for selecting from Drive.
  */
-async function createPicker() {
-    const showPicker = () => {
+function showPicker(){
+    return new Promise((resolve, reject) => {
         const mimeTypes = [projectMimeType, defaultMimeType]
         const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
             .setMimeTypes(mimeTypes.join(","));
         const picker = new google.picker.PickerBuilder()
             .addView(view)
             .setOAuthToken(gapi.client.getToken().access_token)
-            .setCallback(pickerCallback)
+            /**
+             * Callback function from the Google Picker
+             */
+            .setCallback(async (resp) => {
+                if (resp[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
+                    const doc = resp[google.picker.Response.DOCUMENTS][0]
+                    const docID = doc[google.picker.Document.ID]
+                    console.log("You picked: "+docID)
+                    resolve(docID)
+                }
+                if (resp[google.picker.Response.ACTION] == google.picker.Action.CANCEL) {
+                    console.log("User closed the window")
+                    resolve(null)
+                }
+                if (resp[google.picker.Response.ACTION] == google.picker.Action.ERROR) {
+                    console.log("Picker dialog has encountered an error")
+                    reject(resp)
+                }
+                console.log("Something else happened")
+                console.log(resp)
+            })
             .setAppId(CLIENT_ID)
             .build()
-        picker.setVisible(true)
-    }
 
-    await handleAuthToken()
-    showPicker()
+        picker.setVisible(true)
+    })
 }
-// A callback implementation.
+
+/* DEPRECATED
 function pickerCallback(data) {
     console.log(data)
     let url = ""
@@ -205,6 +224,18 @@ function pickerCallback(data) {
     }
     const message = `You picked: ${url}`
     console.log(message)
+}*/
+/**
+ * Function to pick a file with Google Picker
+ */
+async function filePicker() {
+    //Ensure the user is logged in
+    await handleAuthToken()
+    if (gapi.client.getToken() === null)
+        throw Error("User not logged in!")
+    const resp = await showPicker()
+    console.log(resp)
+    return resp
 }
 
 
