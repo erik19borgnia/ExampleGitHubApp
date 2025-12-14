@@ -3,8 +3,8 @@ const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 const SCOPES = "https://www.googleapis.com/auth/drive.file"
 const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
-const projectExtension = "wsd"
-const projectMimeType = "application/wsd"
+const projectExtension = "json"
+const projectMimeType = "application/json"
 const googleUploadAPI = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true'
 const COOKIE_EXPIRATION_DAYS = 15
 const COOKIE_NAME = "googleCredentials"
