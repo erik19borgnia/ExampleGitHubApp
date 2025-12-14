@@ -5,7 +5,7 @@ const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
 const projectExtension = "wsd"
 const projectMimeType = "application/wsd"
-const googleUploadAPI = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true"
+const googleUploadAPI = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true'
 const COOKIE_EXPIRATION_DAYS = 15
 const COOKIE_NAME = "googleCredentials"
 let clientInited = false
@@ -245,17 +245,17 @@ async function exportDiagramToDrive(diagram){
     {
         const diagramData = JSON.stringify(diagram)
         const folderID = await getProjectsFolderID()
-        const file = new Blob([diagramData], {type: "text/plain"});
+        const file = new Blob([diagramData], {type: projectMimeType})
         const diagramName = diagram.name+"."+projectExtension
         const metadata = {
             "name": diagramName,
             "mimeType": projectMimeType,
             "parents": [folderID], // Google Drive folder id
-        };
-        const accessToken = gapi.auth.getToken().access_token;
-        const form = new FormData();
-        form.append("metadata", new Blob([JSON.stringify(metadata)], { type: projectMimeType }));
-        form.append("file", file);
+        }
+        const accessToken = gapi.auth.getToken().access_token
+        const form = new FormData()
+        form.append("metadata", new Blob([JSON.stringify(metadata)], { type: projectMimeType }))
+        form.append("file", file)
         fetch(googleUploadAPI, {
             method: "POST",
             headers: new Headers({ "Authorization": "Bearer " + accessToken }),
@@ -264,7 +264,7 @@ async function exportDiagramToDrive(diagram){
             return res.json();
         }).then(function(val) {
             console.log(val);
-        });
+        })
     }else{
         throw Error("User not logged in!")
     }
