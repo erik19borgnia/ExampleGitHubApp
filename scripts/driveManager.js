@@ -193,19 +193,18 @@ function showPicker(){
                 if (resp[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
                     const doc = resp[google.picker.Response.DOCUMENTS][0]
                     const docID = doc[google.picker.Document.ID]
-                    console.log("You picked: "+docID)
+                    //console.log("User picked "+docID)
                     resolve(docID)
                 }
                 if (resp[google.picker.Response.ACTION] == google.picker.Action.CANCEL) {
-                    console.log("User closed the window")
-                    resolve(null)
+                    //console.log("User closed the window")
+                    reject(null)
                 }
                 if (resp[google.picker.Response.ACTION] == google.picker.Action.ERROR) {
-                    console.log("Picker dialog has encountered an error")
+                    //onsole.log("Picker dialog has encountered an error")
                     reject(resp)
                 }
-                console.log("Something else happened")
-                console.log(resp)
+                //console.log("Something else happened")
             })
             .setAppId(CLIENT_ID)
             .build()
@@ -233,9 +232,17 @@ async function filePicker() {
     await handleAuthToken()
     if (gapi.client.getToken() === null)
         throw Error("User not logged in!")
-    const resp = await showPicker()
-    console.log(resp)
-    return resp
+    
+    showPicker().then(async (selectedID) => {
+        console.log(selectedID)
+        return await importDiagramFromDrive(selectedID)
+    }).catch((error) => {
+        console.log(error)
+        if (error)
+            throw Error("Error in selection")
+        //If there's no error, the user closed the window
+        return null
+    })
 }
 
 
@@ -273,52 +280,47 @@ async function listFiles() {
 }
 
 async function exportDiagramToDrive(diagram){
-    if (gapi.client.getToken() !== null)
-    {
-        const diagramData = JSON.stringify(diagram)
-        const folderID = await getProjectsFolderID()
-        const file = new Blob([diagramData], {type: "application/json"})
-        const diagramName = diagram.name+"."+projectExtension
-        const metadata = {
-            "name": diagramName,
-            "mimeType": projectMimeType,
-            "parents": [folderID], // Google Drive folder id
-        }
-        const accessToken = gapi.auth.getToken().access_token
-        const form = new FormData()
-        form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }))
-        form.append("file", file)
-        fetch(googleUploadAPI, {
-            method: "POST",
-            headers: new Headers({ "Authorization": "Bearer " + accessToken }),
-            body: form,
-        }).then((res) => {
-            return res.json();
-        }).then(function(val) {
-            console.log(val);
-        })
-    }else{
+    if (gapi.client.getToken() === null)
         throw Error("User not logged in!")
+    
+    const diagramData = JSON.stringify(diagram)
+    const folderID = await getProjectsFolderID()
+    const file = new Blob([diagramData], {type: "application/json"})
+    const diagramName = diagram.name+"."+projectExtension
+    const metadata = {
+        "name": diagramName,
+        "mimeType": projectMimeType,
+        "parents": [folderID], // Google Drive folder id
     }
+    const accessToken = gapi.auth.getToken().access_token
+    const form = new FormData()
+    form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }))
+    form.append("file", file)
+    fetch(googleUploadAPI, {
+        method: "POST",
+        headers: new Headers({ "Authorization": "Bearer " + accessToken }),
+        body: form,
+    }).then((res) => {
+        return res.json();
+    }).then(function(val) {
+        console.log(val);
+    })
 }
 
 async function importDiagramFromDrive(fileId){
     if (gapi.client.getToken() !== null)
-    {
-        //TEST FILE
-        fileId = "1YHRxXRU3dVdMIsgTLbEtxiftehpVYJkQ"
-        const file = await gapi.client.drive.files.get({
-            "fileId": fileId,
-            "alt": "media",}) 
-
-        if (file.status !== 200)
-            throw Error("File doesn't exist")
-        console.log("Imported diagram ID "+fileId)
-        return JSON.parse(file.body)
-        
-    }else{
         throw Error("User not logged in!")
-    }
+    
+    //TEST FILE
+    //fileId = "1YHRxXRU3dVdMIsgTLbEtxiftehpVYJkQ"
+    const file = await gapi.client.drive.files.get({
+        "fileId": fileId,
+        "alt": "media",}) 
+
+    if (file.status !== 200)
+        throw Error("File doesn't exist")
+    console.log("Imported diagram ID "+fileId)
+    return JSON.parse(file.body)
 }
 
 /**
