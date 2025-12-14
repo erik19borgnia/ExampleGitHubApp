@@ -180,8 +180,8 @@ async function createPicker() {
     const showPicker = () => {
         const picker = new google.picker.PickerBuilder()
             .addView(google.picker.ViewId.DOCS)
-            //.setSelectableMimeTypes(projectMimeType)
-            .setOAuthToken(gapi.client.getToken())
+            .setSelectableMimeTypes(projectMimeType)
+            .setOAuthToken(gapi.client.getToken().access_token)
             .setCallback(pickerCallback)
             .setAppId(CLIENT_ID)
             .build()
