@@ -3,8 +3,8 @@ const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 const SCOPES = "https://www.googleapis.com/auth/drive.file"
 const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
-const projectExtension = "json"
-const projectMimeType = "application/json"
+const projectExtension = "wsd"
+const projectMimeType = "application/WebSim.Diagram"
 const googleUploadAPI = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true'
 const COOKIE_EXPIRATION_DAYS = 15
 const COOKIE_NAME = "googleCredentials"
@@ -245,7 +245,7 @@ async function exportDiagramToDrive(diagram){
     {
         const diagramData = JSON.stringify(diagram)
         const folderID = await getProjectsFolderID()
-        const file = new Blob([diagramData], {type: projectMimeType})
+        const file = new Blob([diagramData], {type: "application/json"})
         const diagramName = diagram.name+"."+projectExtension
         const metadata = {
             "name": diagramName,
@@ -254,7 +254,7 @@ async function exportDiagramToDrive(diagram){
         }
         const accessToken = gapi.auth.getToken().access_token
         const form = new FormData()
-        form.append("metadata", new Blob([JSON.stringify(metadata)], { type: projectMimeType }))
+        form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }))
         form.append("file", file)
         fetch(googleUploadAPI, {
             method: "POST",
