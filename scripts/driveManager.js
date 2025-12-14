@@ -3,7 +3,8 @@ const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 const SCOPES = "https://www.googleapis.com/auth/drive.file"
 const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
-const projectMimeType = "application/json"
+const projectExtension = "wsd"
+const projectMimeType = "application/wsd"
 const googleUploadAPI = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true"
 const COOKIE_EXPIRATION_DAYS = 15
 const COOKIE_NAME = "googleCredentials"
@@ -245,7 +246,7 @@ async function exportDiagramToDrive(diagram){
         const diagramData = JSON.stringify(diagram)
         const folderID = await getProjectsFolderID()
         const file = new Blob([diagramData], {type: "text/plain"});
-        const diagramName = diagram.name+".wsd"
+        const diagramName = diagram.name+"."+projectExtension
         const metadata = {
             "name": diagramName,
             "mimeType": projectMimeType,
@@ -265,7 +266,7 @@ async function exportDiagramToDrive(diagram){
             console.log(val);
         });
     }else{
-        console.error("Not logged in!")
+        throw Error("User not logged in!")
     }
 }
 
