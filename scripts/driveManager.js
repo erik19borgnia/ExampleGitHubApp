@@ -4,8 +4,9 @@ const SCOPES = "https://www.googleapis.com/auth/drive.file"
 const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
 const projectExtension = "wsd"
-const projectMimeType = "application/WebSim.Diagram"
-const googleUploadAPI = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true'
+const projectMimeType = "application/websim.diagram"
+const defaultMimeType = "application/octet-stream"
+const googleUploadAPI = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true"
 const COOKIE_EXPIRATION_DAYS = 15
 const COOKIE_NAME = "googleCredentials"
 let clientInited = false
@@ -179,11 +180,11 @@ function handleSignout() {
  */
 async function createPicker() {
     const showPicker = () => {
+        const mimeTypes = [projectMimeType, defaultMimeType]
         const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
-            //.setMimeTypes(projectMimeType);
+            .setMimeTypes(mimeTypes.join(","));
         const picker = new google.picker.PickerBuilder()
             .addView(view)
-            //.setSelectableMimeTypes(projectMimeType)
             .setOAuthToken(gapi.client.getToken().access_token)
             .setCallback(pickerCallback)
             .setAppId(CLIENT_ID)
