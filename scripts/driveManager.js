@@ -180,10 +180,10 @@ function handleSignout() {
 async function createPicker() {
     const showPicker = () => {
         const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
-            .setMimeTypes(projectMimeType);
+            //.setMimeTypes(projectMimeType);
         const picker = new google.picker.PickerBuilder()
             .addView(view)
-            .setSelectableMimeTypes(projectMimeType)
+            //.setSelectableMimeTypes(projectMimeType)
             .setOAuthToken(gapi.client.getToken().access_token)
             .setCallback(pickerCallback)
             .setAppId(CLIENT_ID)
