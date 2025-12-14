@@ -132,24 +132,29 @@ function updateCookie(){
 /**
  *  Sign in the user/Refreshes token, if needed
  */
-async function handleAuthToken() {
-    tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-            throw (resp);
-        }
-        refreshTokenTime = Date.now()+gapi.client.getToken().expires_in*1000
-        updateCookie()
-        enableButtons()
-    };
+function handleAuthToken() {
+    return new Promise((resolve, reject) => {
+        tokenClient.callback = async (resp) => {
+            if (resp.error !== undefined) {
+                reject(resp);
+                return;
+            }
+            refreshTokenTime = Date.now()+gapi.client.getToken().expires_in*1000
+            updateCookie()
+            enableButtons()
+            resolve()
+        };
 
-    if (gapi.client.getToken() === null || Date.now()>refreshTokenTime) {
-        // Display account chooser, or refresh the token for an existing session.
-        tokenClient.requestAccessToken({prompt: ""});
-        // This one is more convenient, almost always
-    }
-    console.log("Not finished?")
-    while (gapi.client.getToken() === null){}
-    console.log("Finished!")
+        if (gapi.client.getToken() === null || Date.now()>refreshTokenTime) {
+            // Display account chooser, or refresh the token for an existing session.
+            // This prompt is more convenient, almost always
+            tokenClient.requestAccessToken({prompt: ""});
+        }
+        else{
+            // Token already valid, resolve
+            resolve()
+        }
+    })
 }
 /**
  *  Sign out the user upon button click.
