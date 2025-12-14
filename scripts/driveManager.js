@@ -178,8 +178,10 @@ function handleSignout() {
  */
 async function createPicker() {
     const showPicker = () => {
+        const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
+            .setMimeTypes(projectMimeType);
         const picker = new google.picker.PickerBuilder()
-            .addView(google.picker.ViewId.DOCS)
+            .addView(view)
             .setSelectableMimeTypes(projectMimeType)
             .setOAuthToken(gapi.client.getToken().access_token)
             .setCallback(pickerCallback)
@@ -187,14 +189,6 @@ async function createPicker() {
             .build()
         picker.setVisible(true)
     }
-    /*
-    // Request an access token.
-    tokenClient.callback = async (response) => {
-        if (response.error !== undefined) {
-            throw (response);
-        }
-        showPicker();
-    };*/
 
     await handleAuthToken()
     showPicker()
