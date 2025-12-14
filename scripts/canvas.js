@@ -1097,9 +1097,11 @@ class DiagramUI {
   }
 
   async importFromDrive(){
-    const diagram = await importDiagramFromDrive("")
-    this.canvas.loadDiagram(diagram)
-    alert("Diagram imported successfully!")
+    const diagram = await filePicker()
+    if (diagram)
+      this.canvas.loadDiagram(diagram)
+      alert("Diagram imported successfully!")
+    //The user closed the window, do nothing
   }
 
   triggerImport() {
