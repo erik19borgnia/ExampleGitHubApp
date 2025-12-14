@@ -133,7 +133,6 @@ function updateCookie(){
  *  Sign in the user/Refreshes token, if needed
  */
 async function handleAuthToken() {
-    let finished = false
     tokenClient.callback = async (resp) => {
         if (resp.error !== undefined) {
             throw (resp);
@@ -141,7 +140,6 @@ async function handleAuthToken() {
         refreshTokenTime = Date.now()+gapi.client.getToken().expires_in*1000
         updateCookie()
         enableButtons()
-        finished = true
     };
 
     if (gapi.client.getToken() === null || Date.now()>refreshTokenTime) {
@@ -150,7 +148,7 @@ async function handleAuthToken() {
         // This one is more convenient, almost always
     }
     console.log("Not finished?")
-    while (!finished){}
+    while (gapi.client.getToken() === null){}
     console.log("Finished!")
 }
 /**
