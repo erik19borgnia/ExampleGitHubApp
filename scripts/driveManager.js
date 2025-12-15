@@ -204,7 +204,7 @@ function showPicker(){
         const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
             //.setMimeTypes(mimeTypes.join(","))
             .setMode(google.picker.DocsViewMode.LIST)
-            .setQuery("*.wsd")
+            .setQuery("title:*."+projectExtension)
         const picker = new google.picker.PickerBuilder()
             .addView(view)
             .setOAuthToken(gapi.client.getToken().access_token)
