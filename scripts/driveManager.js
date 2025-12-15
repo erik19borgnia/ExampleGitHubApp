@@ -176,6 +176,26 @@ function handleSignout() {
 // BUTTON INTERACTIONS
 //
 /**
+ * Function to pick a file with Google Picker
+ */
+async function filePicker() {
+    //Ensure the user is logged in
+    await handleAuthToken()
+    if (gapi.client.getToken() === null)
+        throw Error("User not logged in!")
+    
+    return showPicker().then(async (selectedID) => {
+        console.log(selectedID)
+        return await importDiagramFromDrive(selectedID)
+    }).catch((error) => {
+        console.log(error)
+        if (error)
+            throw Error("Error in selection")
+        //If there's no error, the user closed the window
+        return null
+    })
+}
+/**
  * Create and render a Google Picker object for selecting from Drive.
  */
 function showPicker(){
@@ -213,43 +233,12 @@ function showPicker(){
     })
 }
 
-/* DEPRECATED
-function pickerCallback(data) {
-    console.log(data)
-    let url = ""
-    if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
-        const doc = data[google.picker.Response.DOCUMENTS][0]
-        url = doc[google.picker.Document.URL]
-    }
-    const message = `You picked: ${url}`
-    console.log(message)
-}*/
-/**
- * Function to pick a file with Google Picker
- */
-async function filePicker() {
-    //Ensure the user is logged in
-    await handleAuthToken()
-    if (gapi.client.getToken() === null)
-        throw Error("User not logged in!")
-    
-    return showPicker().then(async (selectedID) => {
-        console.log(selectedID)
-        return await importDiagramFromDrive(selectedID)
-    }).catch((error) => {
-        console.log(error)
-        if (error)
-            throw Error("Error in selection")
-        //If there's no error, the user closed the window
-        return null
-    })
-}
-
 
 
 /**
  * Fallback function if Google Picker isn't enabled
  * It lists only the files from the Drive that the App has rights to use
+ * Right now it's not used! It's only for testing accesable files
  */
 async function listFiles() {
     let response;
@@ -279,6 +268,9 @@ async function listFiles() {
     return output
 }
 
+//
+// COMMUNICATION FUNCTIONS
+//
 async function exportDiagramToDrive(diagram){
     if (gapi.client.getToken() === null)
         throw Error("User not logged in!")
@@ -311,15 +303,13 @@ async function importDiagramFromDrive(fileId){
     if (gapi.client.getToken() === null)
         throw Error("User not logged in!")
     
-    //TEST FILE
-    //fileId = "1YHRxXRU3dVdMIsgTLbEtxiftehpVYJkQ"
     const file = await gapi.client.drive.files.get({
         "fileId": fileId,
         "alt": "media",}) 
 
     if (file.status !== 200)
         throw Error("File doesn't exist")
-    console.log("Imported diagram ID "+fileId)
+    //console.log("Imported diagram ID "+fileId)
     return JSON.parse(file.body)
 }
 
