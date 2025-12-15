@@ -1079,7 +1079,7 @@ class DiagramUI {
     URL.revokeObjectURL(url)
   }
 
-  exportToDrive(){
+  async exportToDrive(){
     const { nodes, edges } = this.canvas.getDiagramState()
     const name = document.getElementById("diagramName").value || "diagram"
     const author = document.getElementById("authorInput").value || "Student"
@@ -1093,7 +1093,9 @@ class DiagramUI {
       createdAt: Date.now(),
       modifiedAt: Date.now(),
     }
-    exportDiagramToDrive(diagramData)
+    const res = await exportDiagramToDrive(diagramData)
+    console.log(res)
+    alert("Diagram exported successfully!")
   }
 
   async importFromDrive(){
