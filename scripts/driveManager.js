@@ -202,7 +202,8 @@ function showPicker(){
     return new Promise((resolve, reject) => {
         const mimeTypes = [projectMimeType, defaultMimeType]
         const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
-            .setMimeTypes(mimeTypes.join(","));
+            .setMimeTypes(mimeTypes.join(","))
+            .setViewMode(google.picker.DocsViewMode.LIST)
         const picker = new google.picker.PickerBuilder()
             .addView(view)
             .setOAuthToken(gapi.client.getToken().access_token)
