@@ -4,7 +4,7 @@ const SCOPES = "https://www.googleapis.com/auth/drive.file"
 const projectsFolderName = "WebSim Projects"
 const folderMimeType = "application/vnd.google-apps.folder"
 const projectExtension = "wsd"
-const projectMimeType = "application/websim.diagram"
+const projectMimeType = "application/json"
 const defaultMimeType = "application/octet-stream"
 const googleUploadAPI = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true"
 const COOKIE_EXPIRATION_DAYS = 15
@@ -200,7 +200,8 @@ async function filePicker() {
  */
 function showPicker(){
     return new Promise((resolve, reject) => {
-        const mimeTypes = [projectMimeType, defaultMimeType]
+        //const mimeTypes = [projectMimeType, defaultMimeType]
+        //With the query, it's not necesary to filter mime types
         const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
             //.setMimeTypes(mimeTypes.join(","))
             .setMode(google.picker.DocsViewMode.LIST)
