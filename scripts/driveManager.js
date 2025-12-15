@@ -203,7 +203,7 @@ function showPicker(){
         const mimeTypes = [projectMimeType, defaultMimeType]
         const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
             //.setMimeTypes(mimeTypes.join(","))
-            .setViewMode(google.picker.DocsViewMode.LIST)
+            .setMode(google.picker.DocsViewMode.LIST)
             .setQuery("*.wsd")
         const picker = new google.picker.PickerBuilder()
             .addView(view)
