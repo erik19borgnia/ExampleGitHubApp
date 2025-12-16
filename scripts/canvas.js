@@ -769,6 +769,36 @@ class DiagramCanvas {
     return Math.sqrt(distX * distX + distY * distY) <= threshold
   }
 
+  isWithin(middlePoint,pointA,pointB){
+    let ans = false
+    if (middlePoint.x>=Math.min(pointA.x,pointB.x) && middlePoint.x<=Math.max(pointA.x,pointB.x))
+      if (middlePoint.y>=Math.min(pointA.y,pointB.y) && middlePoint.y<=Math.max(pointA.y,pointB.y))
+        ans=true
+    return ans
+  }
+
+  distanceToLine(middlePoint,pointA,pointB){
+    let A = pointB.y-pointA.y
+    let B = pointA.x-pointB.x
+    let C = pointB.x*pointA.y - pointB.y*pointA.x
+    return Math.abs(A*middlePoint.x+B*middlePoint.y+C)/Math.sqrt(A*A+B*B)
+  }
+
+  getInsertPosition(joints,point){
+    let pos=-1
+    let minDist=99
+    for (let i=0;i<joints.length-1;i++){
+      if (this.isWithin(point,joints[i],joints[i+1])){
+        let dist = this.distanceToLine(point,joints[i],joints[i+1])
+        if (dist<minDist){
+          minDist = dist
+          pos = i+1
+        }
+      }
+    }
+    return pos
+  }
+
   handleContextMenu(e) {
     e.preventDefault()
     const mousePos = this.getMousePos(e)
@@ -780,7 +810,28 @@ class DiagramCanvas {
         if (!edge.waypoints) {
           edge.waypoints = []
         }
-        edge.waypoints.push({ x: mousePos.x, y: mousePos.y })
+        if (edge.waypoints.length==0){//There're no joints, just push
+          edge.waypoints.push({ x: mousePos.x, y: mousePos.y })
+        }else{//there are waypoints
+          const newJoint = { x: mousePos.x, y: mousePos.y }
+          let pos = this.getInsertPosition(edge.waypoints,newJoint)
+          console.log(newJoint)
+          console.log(pos)
+          if (pos==-1){ //It's NOT in the middle
+            //It's on the first or the last position
+            const fromPos = this.getPortPosition(this.getNodeByID(edge.from.nodeId), edge.from.isOutput, edge.from.portIndex)
+            const firstJoint = edge.waypoints[0]
+            const lastJoint = edge.waypoints[edge.waypoints.length-1]
+            const toPos = this.getPortPosition(this.getNodeByID(edge.to.nodeId), edge.to.isOutput, edge.to.portIndex)
+            pos = 0
+            const dist = this.distanceToLine(newJoint,fromPos,firstJoint)
+            if (this.isWithin(newJoint,lastJoint,toPos) && this.distanceToLine(newJoint,lastJoint,toPos)<dist)
+              pos = edge.waypoints.length
+            console.log(pos)
+          }
+          edge.waypoints.splice(pos,0,newJoint)
+        }
+  //      edge.waypoints.push({ x: mousePos.x, y: mousePos.y })
         this.render()
       }
     }
