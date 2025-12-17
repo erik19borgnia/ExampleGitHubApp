@@ -25,7 +25,7 @@ class DeleteNodeCommand extends Command{
     super()
     this.canvas = canvas
     this.node = this.canvas.getNodeByID(nodeID)
-    this.edges = this.canvas.state.edges.filter((e) => e.from.nodeId == nodeID || e.to.nodeId == nodeID)
+    this.edges = this.canvas.state.edges.filter((e) => e.from.nodeId === nodeID || e.to.nodeId === nodeID)
   }
   action(){
     this.canvas.state.nodes = this.canvas.state.nodes.filter((n) => n.id !== this.node.id)

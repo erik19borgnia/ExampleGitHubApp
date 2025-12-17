@@ -1,6 +1,10 @@
+function generateID(){
+    return crypto.randomUUID().substring(0,8)
+}
+
 class DiagramNode{
     constructor(nodeType, x, y){
-        this.id = "node-"+Date.now()
+        this.id = "node-"+generateID()
         this.nodeType = nodeType
         this.x = x
         this.y = y
@@ -10,7 +14,7 @@ class DiagramNode{
 
 class DiagramEdge{
     constructor(outputNode, outputPortNumber, inputNode, inputPortNumber){
-        this.id = "edge-"+Date.now()
+        this.id = "edge-"+generateID()
         this.joints = []
         this.outputNode = outputNode
         this.outputPortNumber = outputPortNumber
@@ -21,7 +25,7 @@ class DiagramEdge{
 
 class DiagramModel{
     constructor(){
-        this.id = "diagram-"+Date.now()
+        this.id = "diagram-"+generateID()
         this.nodes = []
         this.edges = []
         this.author = "Student"
@@ -34,10 +38,23 @@ class DiagramModel{
         this.nodes.push(node)
     }
 
-    addEdge(outputNode, outputPortNumber, inputNode, inputPortNumber){
-        
+    addEdge(edge){
+        this.edges.push(edge)
     }
 
+    getNodeByID(nodeID){
+        return this.nodes.filter((n) => n.id === nodeID)
+    }
 
+    getEdgeByID(edgeID){
+        return this.nodes.filter((e) => e.id === edgeID)
+    }
 
+    deleteNode(nodeID){
+        return this.nodes.splice(this.getNodeByID(nodeID),1)
+    }
+
+    deleteEdge(edgeID){
+        return this.edges.splice(this.getEdgeByID(edgeID),1)
+    }
 }

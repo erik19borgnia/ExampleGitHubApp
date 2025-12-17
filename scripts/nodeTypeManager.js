@@ -1,3 +1,5 @@
+const CUSTOM_NODES_KEY = "customNodes"
+
 class NodeTypeManager {
   constructor(canvasInstance) {
     this.canvasInstance = canvasInstance
@@ -57,12 +59,12 @@ class NodeTypeManager {
   }
 
   loadCustomTypes() {
-    const saved = localStorage.getItem("customNodeTypes")
+    const saved = localStorage.getItem(CUSTOM_NODES_KEY)
     return saved ? JSON.parse(saved) : {}
   }
 
   saveCustomTypes() {
-    localStorage.setItem("customNodeTypes", JSON.stringify(this.customTypes))
+    localStorage.setItem(CUSTOM_NODES_KEY, JSON.stringify(this.customTypes))
   }
 
   removeCustomType(name) {
