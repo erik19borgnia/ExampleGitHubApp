@@ -683,8 +683,7 @@ class DiagramCanvas {
       id,
       type,
       label,
-      position: { x: (this.canvas.width/2 - this.panOffset.x)/this.zoomLevel, y: (this.canvas.height/2 - this.panOffset.y)/this.zoomLevel },
-      //position: { x: this.canvas.width / 2, y: this.canvas.height / 2 },
+      position: { x: (this.canvas.width/2 - this.panOffset.x)/this.zoomLevel, y: (NODE_HEIGHT*2 - this.panOffset.y)/this.zoomLevel },
       width: NODE_WIDTH,
       height: NODE_HEIGHT,
     }).execute()
