@@ -1,6 +1,9 @@
 class DiagramNode{
-    constructor(){
+    constructor(nodeType, x, y){
         this.id = "node-"+Date.now()
+        this.nodeType = nodeType
+        this.x = x
+        this.y = y
     }
 
 }
@@ -18,6 +21,7 @@ class DiagramEdge{
 
 class DiagramModel{
     constructor(){
+        this.id = "diagram-"+Date.now()
         this.nodes = []
         this.edges = []
         this.author = "Student"
@@ -32,7 +36,6 @@ class DiagramModel{
 
     addEdge(outputNode, outputPortNumber, inputNode, inputPortNumber){
         
-
     }
 
 

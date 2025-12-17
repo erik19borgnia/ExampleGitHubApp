@@ -58,6 +58,63 @@ class NewNodeCommand extends Command{
     this.canvas.render()
   }
 }
+class NewEdgeCommand extends Command{
+  constructor(canvas,edge){
+    super()
+    this.canvas = canvas
+    this.edge = edge
+  }
+  action(){
+    this.canvas.state.edges.push(this.edge)
+    this.canvas.state.selectedEdgeId = this.edge.id
+    this.canvas.render()
+  }
+  reverseAction(){
+    this.canvas.state.edges = this.canvas.state.edges.filter((e) => e.id !== this.edge.id)
+    this.canvas.state.selectedEdgeId = null
+    this.canvas.render()
+  }
+}
+class NewJointCommand extends Command{
+  constructor(canvas,edge,newJoint,pos){
+    super()
+    this.canvas = canvas
+    this.edge = edge
+    this.newJoint = newJoint
+    this.pos = pos
+  }
+  action(){
+    this.edge.waypoints.splice(this.pos,0,this.newJoint)
+    this.canvas.render()
+  }
+  reverseAction(){
+    this.edge.waypoints.splice(this.pos,1)
+    this.canvas.render()
+  }
+}
+class MoveCommand extends Command{
+  constructor(canvas,movable){
+    super()
+    this.canvas = canvas
+    this.movable = movable
+    this.oldX = movable.x
+    this.oldY = movable.y
+  }
+  newPosition(newX, newY){
+    this.newX = newX
+    this.newY = newY
+  }
+  action(){
+    this.movable.x = this.newX
+    this.movable.y = this.newY
+    this.canvas.render()
+  }
+  reverseAction(){
+    this.movable.x = this.oldX
+    this.movable.y = this.oldY
+    this.canvas.render()
+  }
+}
 
 // ============ Canvas Management ============
 class DiagramCanvas {
@@ -79,6 +136,7 @@ class DiagramCanvas {
       edgeStart: null,
       isPanningCanvas: false,
       panStart: null,
+      moveCommand: null,
     }
     this.zoomLevel = 1
     this.panOffset = { x: 0, y: 0 }
@@ -196,6 +254,7 @@ class DiagramCanvas {
       this.state.selectedEdgeId = this.state.edges[waypointHit.edgeIndex].id
       this.state.selectedWaypointIndex = waypointHit.waypointIndex
       this.state.isDraggingNode = true
+      this.state.moveCommand = new MoveCommand(this,this.state.edges[waypointHit.edgeIndex].waypoints[waypointHit.waypointIndex])
       this.state.dragStart = { x: mousePos.x, y: mousePos.y, isWaypoint: true }
       this.render()
       return
@@ -225,6 +284,7 @@ class DiagramCanvas {
       this.state.selectedEdgeId = null
       this.state.selectedWaypointIndex = null
       this.state.isDraggingNode = true
+      this.state.moveCommand = new MoveCommand(this,node.position)
       this.state.dragStart = { x: mousePos.x - node.position.x, y: mousePos.y - node.position.y }
       this.render()
       return
@@ -252,7 +312,8 @@ class DiagramCanvas {
     if (this.state.isDraggingNode && this.state.dragStart && this.state.dragStart.isWaypoint) {
       const edge = this.state.edges.find((e) => e.id === this.state.selectedEdgeId)
       if (edge && edge.waypoints && this.state.selectedWaypointIndex !== null) {
-        edge.waypoints[this.state.selectedWaypointIndex] = { x: mousePos.x, y: mousePos.y }
+        edge.waypoints[this.state.selectedWaypointIndex].x = mousePos.x
+        edge.waypoints[this.state.selectedWaypointIndex].y = mousePos.y
       }
       this.render()
       return
@@ -307,7 +368,10 @@ class DiagramCanvas {
 
     const mousePos = this.getMousePos(e)
 
-    if (this.state.isDraggingNode && this.state.dragStart && this.state.dragStart.isWaypoint) {
+    if (this.state.isDraggingNode && this.state.dragStart) {
+      this.state.moveCommand.newPosition(mousePos.x,mousePos.y)
+      this.state.moveCommand.execute()
+      this.state.moveCommand = null
       this.state.isDraggingNode = false
       this.state.dragStart = null
       return
@@ -329,13 +393,13 @@ class DiagramCanvas {
             !(edge.from.nodeId === this.state.edgeStart.nodeId &&
             edge.from.portIndex === this.state.edgeStart.portIndex),
         )
-
-          this.state.edges.push({
+        const newEdge = {
           id: `edge-${Date.now()}`,
           from: this.state.edgeStart,
           to: port,
           waypoints: newWaypoints,
-        })
+        }
+        new NewEdgeCommand(this,newEdge).execute()
         
         //
       }
@@ -647,6 +711,7 @@ class DiagramCanvas {
       edgeStart: null,
       isPanningCanvas: false,
       panStart: null,
+      moveCommand: null,
     }
     this.render()
   }
@@ -810,18 +875,18 @@ class DiagramCanvas {
         if (!edge.waypoints) {
           edge.waypoints = []
         }
-        if (edge.waypoints.length==0){//There're no joints, just push
-          edge.waypoints.push({ x: mousePos.x, y: mousePos.y })
+        const newJoint = { x: mousePos.x, y: mousePos.y }
+        let pos
+        if (edge.waypoints.length==0){//There're no joints, insert pos is 0
+          pos = 0
         }else{//there are waypoints, search the correct position
-          const newJoint = { x: mousePos.x, y: mousePos.y }
           const fromPos = this.getPortPosition(this.getNodeByID(edge.from.nodeId), edge.from.isOutput, edge.from.portIndex)
           const toPos = this.getPortPosition(this.getNodeByID(edge.to.nodeId), edge.to.isOutput, edge.to.portIndex)
           const allJoints = [fromPos].concat(edge.waypoints)
           allJoints.push(toPos)
-          let pos = this.getInsertPosition(allJoints,newJoint)-1
-          edge.waypoints.splice(pos,0,newJoint)
+          pos = this.getInsertPosition(allJoints,newJoint)-1
         }
-        this.render()
+        new NewJointCommand(this,edge,newJoint,pos).execute()
       }
     }
   }
